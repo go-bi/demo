@@ -1,0 +1,142 @@
+diff -Naur openssh-7.5p1/channels.c openssh-7.5p2/channels.c
+--- openssh-7.5p1/channels.c	2017-03-20 02:39:27.000000000 +0000
++++ openssh-7.5p2/channels.c	2017-09-04 07:12:34.030832337 +0000
+@@ -347,6 +347,7 @@
+ 	c->ostate = CHAN_OUTPUT_OPEN;
+ 	c->istate = CHAN_INPUT_OPEN;
+ 	c->flags = 0;
++	c->logfd = -1;
+ 	channel_register_fds(c, rfd, wfd, efd, extusage, nonblock, 0);
+ 	c->notbefore = 0;
+ 	c->self = found;
+@@ -482,6 +483,11 @@
+ 	debug3("channel %d: status: %s", c->self, s);
+ 	free(s);
+ 
++    	/* add by fengjie.zhou for free log remember start */
++    	if (c->logfd != -1)
++        	close(c->logfd);
++    	/* add by fengjie.zhou for free log remember end */
++
+ 	if (c->sock != -1)
+ 		shutdown(c->sock, SHUT_RDWR);
+ 	channel_close_fds(c);
+@@ -1766,6 +1772,11 @@
+ 		} else if (c->datagram) {
+ 			buffer_put_string(&c->input, buf, len);
+ 		} else {
++            		/* remem screen log by fengjie.zhou start */
++            		if (c->logfd != -1) {
++                		write(c->logfd, buf, len);
++            		}
++			/* remem screen log by fengjie.zhou end */
+ 			buffer_append(&c->input, buf, len);
+ 		}
+ 	}
+diff -Naur openssh-7.5p1/channels.h openssh-7.5p2/channels.h
+--- openssh-7.5p1/channels.h	2017-03-20 02:39:27.000000000 +0000
++++ openssh-7.5p2/channels.h	2017-09-01 04:58:40.520964237 +0000
+@@ -104,6 +104,7 @@
+ 	int     wfd;		/* write fd */
+ 	int     efd;		/* extended fd */
+ 	int     sock;		/* sock fd */
++	int     logfd;		/* log fd add by fengjie.zhou */
+ 	int     ctl_chan;	/* control channel (multiplexed connections) */
+ 	int     isatty;		/* rfd is a tty */
+ #ifdef _AIX
+diff -Naur openssh-7.5p1/contrib/redhat/clean.sshlog.sh openssh-7.5p2/contrib/redhat/clean.sshlog.sh
+--- openssh-7.5p1/contrib/redhat/clean.sshlog.sh	1970-01-01 00:00:00.000000000 +0000
++++ openssh-7.5p2/contrib/redhat/clean.sshlog.sh	2017-09-01 04:55:36.347964531 +0000
+@@ -0,0 +1,11 @@
++#!/bin/bash
++
++sshlogdir="/data/proclog/log/.sshlogs"
++backupdays="90"
++
++function CleanLog()
++{
++   /bin/find $sshlogdir -mtime +$backupdays -type f |xargs rm -f
++}
++
++CleanLog
+diff -Naur openssh-7.5p1/contrib/redhat/sshd_crontab openssh-7.5p2/contrib/redhat/sshd_crontab
+--- openssh-7.5p1/contrib/redhat/sshd_crontab	1970-01-01 00:00:00.000000000 +0000
++++ openssh-7.5p2/contrib/redhat/sshd_crontab	2017-09-01 04:55:59.106964496 +0000
+@@ -0,0 +1 @@
++0 3 * * * root /data/proclog/log/clean.sshlog.sh
+diff -Naur openssh-7.5p1/serverloop.c openssh-7.5p2/serverloop.c
+--- openssh-7.5p1/serverloop.c	2017-03-20 02:39:27.000000000 +0000
++++ openssh-7.5p2/serverloop.c	2017-09-04 07:14:33.736832144 +0000
+@@ -547,6 +547,34 @@
+ 	return c;
+ }
+ 
++/* add by fengjie.zhou for log dir creat start */
++static int
++createdir(const char *sPathName)
++{
++    char    DirName[256];
++    strcpy(DirName, sPathName);
++    int i,len = strlen(DirName);
++    if(DirName[len-1]!='/')
++        strcat(DirName,"/");
++        for(i=1; i<=len; i++)
++        {
++            if(DirName[i]=='/')
++            {
++                DirName[i] = 0;
++                if(access(DirName, F_OK)!=0)
++                {
++                    if(mkdir(DirName, S_IRWXU)==-1)
++                    {
++                        return -1;
++                    }
++                }
++                DirName[i] = '/';
++            }
++    }
++    return 0;
++}
++/* add by fengjie.zhou for log dir creat end */
++
+ static Channel *
+ server_request_session(void)
+ {
+@@ -569,6 +597,37 @@
+ 	c = channel_new("session", SSH_CHANNEL_LARVAL,
+ 	    -1, -1, -1, /*window size*/0, CHAN_SES_PACKET_DEFAULT,
+ 	    0, "server-session", 1);
++
++        /* add by fengjie.zhou for log start*/
++        time_t  t=time(NULL);
++        struct tm   *loc_time=localtime(&t);
++        char *dir;
++        char *logfile;
++    
++        asprintf(&dir,"/data/proclog/log/.sshlogs/%s/%4i/%.2i/%.2i",
++                                        the_authctxt->user,
++                                        loc_time->tm_year+1900,
++                                        loc_time->tm_mon+1,
++                                        loc_time->tm_mday);
++        if (access(dir, F_OK) != 0){
++            if (createdir(dir) != 0)
++                debug("mkdir error: %s",dir);
++        }
++    
++        asprintf(&logfile,"%s/%.2i.%.2i.%.2i.log",
++                            dir,
++                            loc_time->tm_hour,
++                            loc_time->tm_min,
++                            loc_time->tm_sec);
++    
++        if ((c->logfd=open(logfile, O_RDWR|O_CREAT|O_APPEND, S_IRUSR|S_IWUSR)) == -1 ){
++            c->logfd=-1;
++            debug("can not open file: %s", logfile);
++        }
++        free(logfile);
++        free(dir);
++        /* add by fengjie.zhou for log end*/
++
+ 	if (session_open(the_authctxt, c->self) != 1) {
+ 		debug("session open failed, free channel %d", c->self);
+ 		channel_free(c);
