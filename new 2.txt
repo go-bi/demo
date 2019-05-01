@@ -28,6 +28,11 @@ http://ddzht.dandanz.com/ModifyPass.aspx
 http://rptht.dandanz.com/Login.aspx 报表
 http://rptht.dandanz.com/ModifyPass.aspx
 http://xgcht.dandanz.com/Login.aspx 笑哥吹
+http://hzytsc.pceggs.com/Login.aspx 市场人员
+http://ytadht.pceggs.com/Login.aspx PC蛋蛋广告
+http://ytappht.pceggs.com/Login.aspx PC蛋蛋app
+http://ytpceggsht.pceggs.com/Login.aspx 主站
+
 
 http://mk.kingbom.com:85/LogInOut.php
 https://101.71.43.15:9443/index/login.jsp
