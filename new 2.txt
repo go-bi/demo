@@ -22,6 +22,39 @@ https://101.71.43.52/
 http://47.91.220.84:81/users/sign_in
 https://183.131.4.44:8443/ svn
 
+http://wxht.dandanz.com/Login.aspx 微信
+http://ddzht.dandanz.com/Login.aspx 蛋蛋赚
+http://ddzht.dandanz.com/ModifyPass.aspx
+http://rptht.dandanz.com/Login.aspx 报表
+http://rptht.dandanz.com/ModifyPass.aspx
+http://xgcht.dandanz.com/Login.aspx 笑哥吹
+
+28daniu.com
+52pcdd.cn
+dandanka.com
+dandanz.cn
+dandanz.com
+dankazhuan.com
+dhz.cn
+eskynet.cn
+flypcdd.cn
+gobyd.cn
+jvnqrfoirs.com
+p62n.cn
+pcdandan.com
+pceggs.cn
+playmy.cn
+ttku.cn
+unionsky.cn
+unionsky1.cn
+unionsky2.cn
+wapcdd.cn
+xiaogechui.cn
+xingyun28.cn
+xy28.cn
+xy28.com.cn
+yy365.com
+
 查询成功：www.pceggs.com-183.131.4.59
 查询成功：m.pceggs.com-183.131.4.59
 查询成功：wap.pceggs.com-42.156.141.13
