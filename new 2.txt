@@ -29,6 +29,10 @@ http://rptht.dandanz.com/Login.aspx 报表
 http://rptht.dandanz.com/ModifyPass.aspx
 http://xgcht.dandanz.com/Login.aspx 笑哥吹
 
+http://mk.kingbom.com:85/LogInOut.php
+https://101.71.43.15:9443/index/login.jsp
+https://mb.kingbom.com/login.jsp
+
 28daniu.com
 52pcdd.cn
 dandanka.com
