@@ -87,3 +87,6 @@ Kali Beef Framework Start Script
 + https://share.dmca.gripe/NzwQ12XcKipA3Ie6.txt	Winndwos offine
 + https://share.dmca.gripe/0WfFxN2u1qhekMRS.txt	Windows online dll
 
+## SambaCry漏洞扫描程序
+存档的密码:`sambacry`
+参考:https://bi.zone/news/vulnerability-scanner-sambacry/
