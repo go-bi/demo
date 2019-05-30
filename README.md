@@ -90,3 +90,7 @@ Kali Beef Framework Start Script
 ## SambaCry漏洞扫描程序
 存档的密码:`sambacry` <br>
 参考:https://bi.zone/news/vulnerability-scanner-sambacry/
+
+## WannaCry漏洞扫描程序MS17-010
+存档的密码:`wannacry` <br>
+参考:https://bi.zone/news/vulnerability-scanner-ms17-010/
