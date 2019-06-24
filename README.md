@@ -117,7 +117,7 @@ address x.x.x.x	//固定ip地址，根据实际情况填写
 netmask x.x.x.x	//子网掩码，根据实际情况填写
 gateway x.x.x.x	//网关，根据实际情况填写
 ```
-4.修改`nano /etc/resolv.confdns`文件添加dns
+4.修改`nano /etc/resolv.conf`文件添加dns
 ```
 nameserver 114.114.114.114
 nameserver 8.8.8.8
