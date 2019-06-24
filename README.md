@@ -122,3 +122,4 @@ gateway x.x.x.x	//网关，根据实际情况填写
 nameserver 114.114.114.114
 nameserver 8.8.8.8
 ```
+5.重启系统或`/etc/init.d/networking restart`重启网络服务
