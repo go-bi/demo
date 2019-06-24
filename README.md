@@ -94,3 +94,31 @@ Kali Beef Framework Start Script
 ## WannaCry漏洞扫描程序MS17-010
 存档的密码:`wannacry` <br>
 参考:https://bi.zone/news/vulnerability-scanner-ms17-010/
+
+## kali开启SSH服务，允许root登陆
+```
+systemctl enable ssh.service	//开启SSH服务开机启动
+```
+`nano /etc/ssh/sshd_config`允许root登陆
+```
+#PermitRootLogin prohibit-password
+PermitRootLogin yes
+#PasswordAuthentication yes
+PasswordAuthentication yes
+```
+## kali设置固定ip
+1.首先把kali虚拟机的**网络适配器**更改为**桥接模式**直连物理网络。<br>
+2.查看自己主机的（是自己真实电脑的不是虚拟机）ip地址，网关，网段。<br>
+3.修改`nano /etc/network/interfaces`文件，添加如下内容
+```
+auto eth0	//自动启动eth0网卡
+iface eth0 inet static	//静态获取IP
+address x.x.x.x	//固定ip地址，根据实际情况填写
+netmask x.x.x.x	//子网掩码，根据实际情况填写
+gateway x.x.x.x	//网关，根据实际情况填写
+```
+4.修改`nano /etc/resolv.confdns`文件添加dns
+```
+nameserver 114.114.114.114
+nameserver 8.8.8.8
+```
