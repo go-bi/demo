@@ -6,6 +6,8 @@ openssh*.tar.gz 修改后的文件编译安装即可，*.docx为修改说明。
 + https://www.zhoufengjie.cn/?p=385
 + https://www.zhoufengjie.cn/?p=174
 
+## run.js
+Browser-based subdomain bruteforcing using DNS over HTTP(s) (DoH)
 ## dropbear
 + FAKE_ROOT: #define 强制伪"root"uid解析，即使目标系统无法解析用户名。
 + ALT_SHELL: #define 假冒root用户使用备用shell而不是/bin/sh登陆。
