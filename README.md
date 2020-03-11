@@ -136,3 +136,6 @@ puzlbox [-s Server（默认本地主机）] [-m扫描模式（默认CFLPSX）] [
 ## linux ddos集群源码
 
 存档的密码:`123` <br>linux集群源码_2.7z 
+
+## XSSHunter-Setup安装教程
+`XSSHunter-Setup`安装教程文章
