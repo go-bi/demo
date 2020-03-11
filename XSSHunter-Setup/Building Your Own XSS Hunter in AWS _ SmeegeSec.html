@@ -1,0 +1,2583 @@
+<!DOCTYPE html>
+<!-- saved from url=(0074)https://www.smeegesec.com/2018/07/building-your-own-xss-hunter-in-aws.html -->
+<html dir="ltr" lang="en-US" xmlns="http://www.w3.org/1999/xhtml" xmlns:b="http://www.google.com/2005/gml/b" xmlns:data="http://www.google.com/2005/gml/data" xmlns:expr="http://www.google.com/2005/gml/expr"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<link href="./Building Your Own XSS Hunter in AWS _ SmeegeSec_files/2549344219-widget_css_bundle.css" rel="stylesheet" type="text/css">
+
+<meta content="width=device-width, initial-scale=1, maximum-scale=1" name="viewport">
+
+<meta content="blogger" name="generator">
+<link href="https://www.smeegesec.com/favicon.ico" rel="icon" type="image/x-icon">
+<link href="https://www.smeegesec.com/2018/07/building-your-own-xss-hunter-in-aws.html" rel="canonical">
+<link rel="alternate" type="application/atom+xml" title="SmeegeSec - Atom" href="https://www.smeegesec.com/feeds/posts/default">
+<link rel="alternate" type="application/rss+xml" title="SmeegeSec - RSS" href="https://www.smeegesec.com/feeds/posts/default?alt=rss">
+<link rel="service.post" type="application/atom+xml" title="SmeegeSec - Atom" href="https://www.blogger.com/feeds/8845853463796109471/posts/default">
+
+<link rel="alternate" type="application/atom+xml" title="SmeegeSec - Atom" href="https://www.smeegesec.com/feeds/4725598423524496743/comments/default">
+<!--Can't find substitution for tag [blog.ieCssRetrofitLinks]-->
+<link href="./Building Your Own XSS Hunter in AWS _ SmeegeSec_files/NameCheap-DNS.png" rel="image_src">
+<meta content="https://www.smeegesec.com/2018/07/building-your-own-xss-hunter-in-aws.html" property="og:url">
+<meta content="Building Your Own XSS Hunter in AWS" property="og:title">
+<meta content=" XSS Hunter is a tool for finding cross-site scripting (XSS) vulnerabilities, including the elusive blind XSS . A web version of the tool is..." property="og:description">
+<meta content="https://2.bp.blogspot.com/-HTWTDFc0biQ/W1JttTx7zZI/AAAAAAAAAlk/o-FGnUnUF3kY3W4qNT54ALzUsxGfaowFwCLcBGAs/w1200-h630-p-k-no-nu/NameCheap-DNS.png" property="og:image">
+<!--[if IE]> <script> (function() { var html5 = ("abbr,article,aside,audio,canvas,datalist,details," + "figure,footer,header,hgroup,mark,menu,meter,nav,output," + "progress,section,time,video").split(','); for (var i = 0; i < html5.length; i++) { document.createElement(html5[i]); } try { document.execCommand('BackgroundImageCache', false, true); } catch(e) {} })(); </script> <![endif]-->
+<link href="./Building Your Own XSS Hunter in AWS _ SmeegeSec_files/css" rel="stylesheet" type="text/css">
+<link href="./Building Your Own XSS Hunter in AWS _ SmeegeSec_files/css(1)" rel="stylesheet" type="text/css">
+<link href="./Building Your Own XSS Hunter in AWS _ SmeegeSec_files/font-awesome.min.css" rel="stylesheet">
+<title>Building Your Own XSS Hunter in AWS ~ SmeegeSec</title>
+<!--[if lt IE 9]> <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script> <![endif]-->
+<style id="page-skin-1" type="text/css"><!--
+/*
+-----------------------------------------------
+Template Name  : Zenzero
+Author         : NewBloggerThemes.com
+Author URL     : http://newbloggerthemes.com/
+Theme URL      : http://newbloggerthemes.com/zenzero-blogger-template/
+Created Date   : Wednesday, February 11, 2015
+License        : GNU General Public License v2 or later
+This template is free for both personal and commercial use, But to satisfy the 'attribution' clause of the license, you are required to keep the footer links intact which provides due credit to its authors.
+----------------------------------------------- */
+body#layout ul{list-style-type:none;list-style:none}
+body#layout ul li{list-style-type:none;list-style:none}
+body#layout #headerbwrap {height:auto;}
+body#layout #content {}
+/* Variable definitions
+====================
+*/
+/* Use this with templates/template-twocol.html */
+.section, .widget {
+margin:0;
+padding:0;
+}
+/*--------------------------------------------------------------
+1.0 Reset
+--------------------------------------------------------------*/
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, font, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td {
+border: 0;
+font-family: inherit;
+font-size: 100%;
+font-style: inherit;
+font-weight: inherit;
+margin: 0;
+outline: 0;
+padding: 0;
+vertical-align: baseline;
+}
+html {
+font-size: 62.5%; /* Corrects text resizing oddly in IE6/7 when body font-size is set using em units http://clagnut.com/blog/348/#c790 */
+overflow-y: scroll; /* Keeps page centered in all browsers regardless of content height */
+-webkit-text-size-adjust: 100%; /* Prevents iOS text size adjust after orientation change, without disabling user zoom */
+-ms-text-size-adjust:     100%; /* www.456bereastreet.com/archive/201012/controlling_text_size_in_safari_for_ios_without_disabling_user_zoom/ */
+box-sizing: border-box; /* Apply a natural box layout model to the document; see http://www.paulirish.com/2012/box-sizing-border-box-ftw/ */
+}
+*,
+*:before,
+*:after { /* Inherit box-sizing to make it easier to change the property for components that leverage other behavior; see http://css-tricks.com/inheriting-box-sizing-probably-slightly-better-best-practice/ */
+box-sizing: inherit;
+}
+body {
+background: #f0f0f0;
+overflow-x: hidden;
+}
+article,
+aside,
+details,
+figcaption,
+figure,
+footer,
+header,
+main,
+nav,
+section {
+display: block;
+}
+ol,
+ul {
+list-style: none;
+}
+table { /* tables still need 'cellspacing="0"' in the markup */
+border-collapse: separate;
+border-spacing: 0;
+max-width: 100%;
+}
+table th, table td {
+border: 1px solid rgba(0,0,0,.08);
+text-align: center;
+padding: .5em;
+}
+table th {
+background: rgba(0,0,0,.08);
+}
+caption,
+th,
+td {
+font-weight: normal;
+text-align: left;
+}
+blockquote:before,
+blockquote:after,
+q:before,
+q:after {
+content: "";
+}
+blockquote,
+q {
+quotes: "" "";
+}
+a:focus {
+outline: thin dotted;
+}
+a:hover,
+a:active {
+outline: 0;
+}
+a img {
+border: 0;
+}
+/*--------------------------------------------------------------
+2.0 Typography
+--------------------------------------------------------------*/
+body,
+button,
+input,
+select,
+textarea {
+color: #919191;
+font-family: PT Serif, sans-serif;
+font-size: 16px;
+font-size: 1.6rem;
+line-height: 2;
+-webkit-font-smoothing: antialiased;
+-webkit-text-size-adjust: none;
+text-rendering: optimizeLegibility;
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+clear: both;
+font-weight: 700;
+font-family: Open Sans, sans-serif;
+}
+h1 {font-size: 35px;}
+h2 {font-size: 25px;}
+h3 {font-size: 20px;}
+h4 {font-size: 18px;}
+h5 {font-size: 13px;}
+h6 {font-size: 10px;}
+p {
+margin-bottom: 1.0em;
+}
+b,
+strong {
+font-weight: bold;
+}
+dfn,
+cite,
+em,
+i {
+font-style: italic;
+}
+blockquote {
+display: block;
+padding: 1.5em 1.5em 1.5em 3.5em;
+margin: 0 0 1.5em;
+position: relative;
+border-left: 5px solid;
+border-right: 2px solid;
+font-weight: 300;
+}
+blockquote::before {
+content: "\201C";
+font-size: 60px;
+line-height: 1;
+font-weight: bold;
+position: absolute;
+left: 10px;
+top: 10px;
+}
+address {
+margin: 0 0 1.5em;
+}
+pre {
+background: rgba(0,0,0,.08);
+font-family: "Courier 10 Pitch", Courier, monospace;
+font-size: 15px;
+font-size: 1.5rem;
+line-height: 1.6;
+margin-bottom: 1.6em;
+max-width: 100%;
+overflow: auto;
+padding: 1.6em;
+}
+code,
+kbd,
+tt,
+var {
+font: 15px Monaco, Consolas, "Andale Mono", "DejaVu Sans Mono", monospace;
+}
+abbr,
+acronym {
+border-bottom: 1px dotted #666;
+cursor: help;
+}
+mark,
+ins {
+background: #fff9c0;
+text-decoration: none;
+}
+sup,
+sub {
+font-size: 75%;
+height: 0;
+line-height: 0;
+position: relative;
+vertical-align: baseline;
+}
+sup {
+bottom: 1ex;
+}
+sub {
+top: .5ex;
+}
+small {
+font-size: 75%;
+}
+big {
+font-size: 125%;
+}
+/*--------------------------------------------------------------
+3.0 Elements
+--------------------------------------------------------------*/
+.spaceLeft {
+padding-left: 5px;
+}
+.spaceRight {
+padding-right: 5px;
+}
+.spaceLeftDouble {
+padding-left: 10px;
+}
+.spaceRightDouble {
+padding-right: 10px;
+}
+.spaceLeftRight {
+padding: 0 5px;
+}
+hr {
+background-color: #ccc;
+border: 0;
+height: 1px;
+margin-bottom: 1.5em;
+}
+ul,
+ol {
+margin: 0 0 1.5em 3em;
+}
+ul {
+list-style: disc;
+}
+ol {
+list-style: decimal;
+}
+li > ul,
+li > ol {
+margin-bottom: 0;
+margin-left: 1.5em;
+}
+dt {
+font-weight: bold;
+}
+dd {
+margin: 0 1.5em 1.5em;
+}
+img {
+height: auto; /* Make sure images are scaled correctly. */
+max-width: 100%; /* Adhere to container width. */
+}
+figure {
+margin: 0;
+}
+table {
+margin: 0 0 1.5em;
+width: 100%;
+}
+th {
+font-weight: bold;
+}
+/*--------------------------------------------------------------
+4.0 Forms
+--------------------------------------------------------------*/
+button,
+input,
+select,
+textarea {
+font-size: 85%; /* Corrects font size not being inherited in all browsers */
+margin: 0; /* Addresses margins set differently in IE6/7, F3/4, S5, Chrome */
+vertical-align: baseline; /* Improves appearance and consistency in all browsers */
+}
+button,
+input[type="button"],
+input[type="reset"],
+input[type="submit"] {
+background: #292929;
+color: #ffffff;
+padding: 8px;
+margin: 1px;
+display: inline-block;
+border: 1px solid transparent;
+border-radius: 3px;
+-o-transition: all .7s ease-in-out;
+-moz-transition: all .7s ease-in-out;
+-webkit-transition: all .7s ease-in-out;
+transition: all .7s ease-in-out;
+cursor: pointer; /* Improves usability and consistency of cursor style between image-type 'input' and others */
+-webkit-appearance: none;
+font-size: 13px;
+font-size: 1.3rem;
+line-height: 1;
+outline: none;
+font-weight: 700;
+}
+button:hover,
+input[type="button"]:hover,
+input[type="reset"]:hover,
+input[type="submit"]:hover {
+background: transparent;
+border: 1px solid #292929;
+color: #292929;
+-o-transition: all 0s ease-in-out;
+-moz-transition: all 0s ease-in-out;
+-webkit-transition: all 0s ease-in-out;
+transition: all 0s ease-in-out;
+}
+button:focus,
+input[type="button"]:focus,
+input[type="reset"]:focus,
+input[type="submit"]:focus,
+button:active,
+input[type="button"]:active,
+input[type="reset"]:active,
+input[type="submit"]:active {
+background: transparent;
+border: 1px solid #292929;
+color: #292929;
+-o-transition: all 0s ease-in-out;
+-moz-transition: all 0s ease-in-out;
+-webkit-transition: all 0s ease-in-out;
+transition: all 0s ease-in-out;
+}
+input[type="checkbox"],
+input[type="radio"] {
+padding: 0; /* Addresses excess padding in IE8/9 */
+}
+#secondarynbt input[type="search"] {
+width: 100%;
+background: rgba(0,0,0,.08);
+}
+#secondarynbt .widget select {
+width: 100%;
+}
+#search-fullnbt input[type="text"] {
+background: transparent;
+font-size: 125%;
+line-height: 1;
+border-bottom: 2px dotted;
+border-radius: 0px;
+padding: 1em 2em;
+width: 100%;
+}
+#search-fullnbt input[type="text"]:focus {
+border: 0;
+border-bottom: 2px dotted;
+}
+input[type="search"]::-webkit-search-decoration { /* Corrects inner padding displayed oddly in S5, Chrome on OSX */
+-webkit-appearance: none;
+}
+button::-moz-focus-inner,
+input::-moz-focus-inner { /* Corrects inner padding and border displayed oddly in FF3/4 www.sitepen.com/blog/2008/05/14/the-devils-in-the-details-fixing-dojos-toolbar-buttons/ */
+border: 0;
+padding: 0;
+}
+input[type="text"],
+input[type="email"],
+input[type="url"],
+input[type="password"],
+input[type="search"],
+textarea {
+outline: none;
+border: 0;
+border-radius: 3px;
+background: rgba(0,0,0,.03);
+-o-transition: background .3s ease-in-out;
+-moz-transition: background .3s ease-in-out;
+-webkit-transition: background .3s ease-in-out;
+transition: background .3s ease-in-out;
+}
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="url"]:focus,
+input[type="password"]:focus,
+input[type="search"]:focus,
+textarea:focus {
+background: rgba(0,0,0,.05);
+}
+input[type="text"],
+input[type="email"],
+input[type="url"],
+input[type="password"],
+input[type="search"] {
+padding: 10px 14px;
+}
+textarea {
+overflow: auto; /* Removes default vertical scrollbar in IE6/7/8/9 */
+padding-left: 14px;
+vertical-align: top; /* Improves readability and alignment in all browsers */
+width: 100%;
+}
+/*--------------------------------------------------------------
+5.0 Navigation
+--------------------------------------------------------------*/
+/*--------------------------------------------------------------
+5.1 Links
+--------------------------------------------------------------*/
+a {
+color: #005FA6;
+text-decoration: none;
+}
+a:hover,
+a:focus,
+a:active {
+color: #149BFF;
+}
+.site-headernbt a, .site-footernbt a, #secondarynbt a, .site-footernbt a:hover {
+color: #727272;
+}
+.site-brandingnbt a, .site-brandingnbt a:hover {
+color: #ffffff;
+}
+.menu-togglenbt, .menu-togglenbt:hover {
+color: #ffffff !important;
+}
+.entry-content p a {
+/*border-bottom: 1px dotted;*/
+}
+/*--------------------------------------------------------------
+5.2 Menus
+--------------------------------------------------------------*/
+.main-navigationnbt {
+clear: both;
+display: block;
+width: 100%;
+margin-top: 0.5 em;
+font-family: Open Sans;
+}
+.main-navigationnbt ul {
+list-style: none;
+margin: 0;
+padding-left: 0;
+}
+.main-navigationnbt li {
+display: inline-block;
+position: relative;
+text-transform: uppercase;
+}
+.main-navigationnbt ul li .indicator {
+position: absolute;
+right: 0;
+top: 19px;
+font-family: 'FontAwesome';
+font-size: 12px;
+line-height: 1;
+color: #727272;
+-webkit-transition: color 0.3s;
+-moz-transition: color 0.3s;
+transition: color 0.3s;
+}
+.main-navigationnbt ul ul li .indicator {
+right: 8px;
+}
+.main-navigationnbt ul li .indicator:before {
+content: "\f0d7";
+}
+.main-navigationnbt ul ul li .indicator:before {
+content: "\f0da";
+}
+.main-navigationnbt a {
+display: block;
+text-decoration: none;
+font-weight: bold;
+padding: 1.5em 1em 3em;
+-webkit-transition: color 0.3s;
+-moz-transition: color 0.3s;
+transition: color 0.3s;
+}
+.main-navigationnbt ul:not(.sub-menu):not(.children) > li > a::before {
+position: absolute;
+top: 45%;
+left: 50%;
+color: transparent;
+content: '';
+font-size: 85%;
+text-shadow: 0 0 transparent;
+-webkit-transition: text-shadow 0.3s, color 0.3s;
+-moz-transition: text-shadow 0.3s, color 0.3s;
+transition: text-shadow 0.3s, color 0.3s;
+-webkit-transform: translateX(-50%);
+-moz-transform: translateX(-50%);
+transform: translateX(-50%);
+pointer-events: none;
+}
+.main-navigationnbt ul:not(.sub-menu):not(.children) > li > a:hover::before,
+.main-navigationnbt ul:not(.sub-menu):not(.children) > li > a:focus::before {
+color: #ffffff;
+text-shadow: 8px 0 #ffffff, -8px 0 #ffffff;
+}
+.main-navigationnbt ul li:hover > a,
+.main-navigationnbt li.current-menu-item > a,
+.main-navigationnbt li.current-menu-parent > a,
+.main-navigationnbt li.current-page-ancestor > a,
+.main-navigationnbt .current_page_item > a,
+.main-navigationnbt ul > li:hover .indicator,
+.main-navigationnbt li.current-menu-parent .indicator,
+.main-navigationnbt li.current-menu-item .indicator {
+color: #ffffff;
+}
+.main-navigationnbt ul ul {
+background: #292929;
+float: left;
+position: absolute;
+top: 5.5em;
+left: auto;
+z-index: 99999;
+visibility:hidden;
+opacity:0;
+transition:visibility 0s linear 0.3s,opacity 0.3s linear;
+}
+.main-navigationnbt ul ul ul {
+left: 100%;
+top: 0;
+visibility:hidden;
+opacity:0;
+transition:visibility 0s linear 0.3s,opacity 0.3s linear;
+}
+.main-navigationnbt ul ul a {
+width: 200px;
+padding: 1.5em;
+text-align: left;
+}
+.main-navigationnbt ul ul li {
+text-transform: none;
+}
+.main-navigationnbt li:hover > a {
+}
+.main-navigationnbt ul ul :hover > a {
+}
+.main-navigationnbt ul ul a:hover {
+}
+.main-navigationnbt ul li:hover > ul {
+visibility:visible;
+opacity:1;
+transition-delay:0s;
+}
+.main-navigationnbt ul ul li:hover > ul {
+visibility:visible;
+opacity:1;
+transition-delay:0s;
+}
+/* Small menu */
+.menu-togglenbt {
+display: none;
+}
+@media screen and (max-width: 768px) {
+.menu-togglenbt,
+.main-navigationnbt.toggled .nav-menu {
+display: block;
+}
+.main-navigationnbt ul {
+display: none;
+}
+.menu-togglenbt, .main-navigationnbt.toggled .nav-menu {
+display: block;
+width: 100%;
+border-radius: 2px;
+text-align: left;
+float: left;
+padding: 1.5em;
+}
+.main-navigationnbt.toggled .nav-menu {
+padding: 0 1.5em 1.5em;
+}
+.main-navigationnbt.toggled .nav-menu ul {
+display: block;
+left: auto;
+position: relative;
+top: 0;
+border-bottom: 0px;
+padding-left: 5%;
+width: 100%;
+opacity: 1;
+visibility: visible;
+}
+.main-navigationnbt.toggled ul ul a {
+font-size: 100%;
+width: 100%;
+}
+.menu-togglenbt, .menu-togglenbt:hover {
+text-transform: uppercase;
+}
+.menu-togglenbt i {
+float:right;
+}
+.main-navigationnbt li {
+width: 100%;
+}
+.main-navigationnbt a {
+border-bottom: 1px solid rgba(0,0,0,.08);
+padding: 1.5em;
+}
+.main-navigationnbt ul:not(.sub-menu) > li > a:hover::before,
+.main-navigationnbt ul:not(.sub-menu) > li > a:focus::before {
+color: transparent !important;
+text-shadow: none !important;
+}
+}
+/*--------------------------------------------------------------
+6.0 Accessibility
+--------------------------------------------------------------*/
+/* Text meant only for screen readers */
+.screen-reader-text {
+clip: rect(1px, 1px, 1px, 1px);
+position: absolute !important;
+height: 1px;
+width: 1px;
+overflow: hidden;
+}
+.screen-reader-text:hover,
+.screen-reader-text:active,
+.screen-reader-text:focus {
+background-color: #f1f1f1;
+border-radius: 3px;
+box-shadow: 0 0 2px 2px rgba(0, 0, 0, 0.6);
+clip: auto !important;
+color: #21759b;
+display: block;
+font-size: 14px;
+font-weight: bold;
+height: auto;
+left: 5px;
+line-height: normal;
+padding: 15px 23px 14px;
+text-decoration: none;
+top: 5px;
+width: auto;
+z-index: 100000; /* Above WP toolbar */
+}
+/*--------------------------------------------------------------
+8.0 Clearings
+--------------------------------------------------------------*/
+.clear:before,
+.clear:after,
+.entry-content:before,
+.entry-content:after,
+.site-headernbt:before,
+.site-headernbt:after,
+.site-contentnbt:before,
+.site-contentnbt:after,
+.site-footernbt:before,
+.site-footernbt:after {
+content: "";
+display: table;
+}
+.clear:after,
+.entry-content:after,
+.site-headernbt:after,
+.site-contentnbt:after,
+.site-footernbt:after {
+clear: both;
+}
+/*--------------------------------------------------------------
+9.0 Widgets
+--------------------------------------------------------------*/
+#secondarynbt .widget {
+margin: 0 0 1.5em;
+padding: 0 0 1.5em;
+border-bottom: 0.5em solid rgba(0,0,0,.08);
+}
+/* Make sure select elements fit in widgets */
+.widget select {
+max-width: 100%;
+}
+/* Search widget */
+.widget_searchnbt .search-submit {
+display: none;
+}
+/*--------------------------------------------------------------
+10.0 Content
+--------------------------------------------------------------*/
+.smallPartnbt {
+font-size: 12px;
+font-size: 1.2rem;
+line-height: 1.1;
+}
+.widget-areanbt.smallPartnbt {
+line-height: 1.5;
+}
+#pagenbt {
+max-width: 930px;
+margin: 5em auto;
+background: #ffffff;
+position: relative;
+z-index: 1;
+left: 0;
+-o-transition: left .3s ease-in-out;
+-moz-transition: left .3s ease-in-out;
+-webkit-transition: left .3s ease-in-out;
+transition: left .3s ease-in-out;
+}
+.site-brandingnbt {
+line-height: 1.2;
+}
+.site-titlenbt {
+text-transform: uppercase;
+letter-spacing: -2px;
+font-size: 45px;
+font-weight: 900;
+}
+.site-descriptionnbt {
+letter-spacing: 2px;
+font-weight: 600;
+font-size: 90%;
+}
+.menunbt {
+font-size: 16px;
+}
+.site-headernbt, .site-footernbt {
+background: #292929;
+color: #727272;
+}
+.site-headernbt, .site-contentnbt, .site-footernbt {
+padding: 3em 5em;
+}
+.site-headernbt {
+padding: 3em 1em 0;
+text-align: center;
+}
+.site-contentnbt {
+padding: 0em 5em;
+}
+.entry-header {
+margin-top: 3em;
+position: relative;
+}
+.entry-title {
+letter-spacing: -1px;
+text-align: center;
+text-transform: uppercase;
+line-height: 1.2;
+margin-bottom: 10px;
+}
+.betweenPostnbt {
+height: 2px;
+width: 50%;
+margin: 0 auto;
+background: rgba(0,0,0,.08);
+margin-bottom: 3em;
+}
+.beforeContentnbt {
+height: .5em;
+width: .5em;
+background: rgba(0,0,0,.08);
+border-radius: 50%;
+margin: 1.5em auto 0;
+box-shadow: 1em 0em rgba(0,0,0,.08), -1em 0em rgba(0,0,0,.08);
+}
+#secondarynbt {
+padding: 3em 1em;
+position: fixed;
+top: 0;
+width: 280px;
+background: #292929;
+color: #727272;
+height: 100%;
+overflow-y: auto;
+overflow-x: hidden;
+min-height: 100%;
+left: -280px;
+opacity: 0;
+-o-transition: left .3s ease-in-out;
+-moz-transition: left .3s ease-in-out;
+-webkit-transition: left .3s ease-in-out;
+transition: left .3s ease-in-out;
+}
+#secondarynbt.loaded {
+left:-280px;
+opacity: 1;
+}
+body.menu-opened #secondarynbt {
+left:0;
+z-index: 99;
+}
+body.menu-opened #pagenbt {
+z-index: 2;
+left: 280px;
+}
+body.menu-opened .showSidenbt, body.menu-opened .showSearchnbt, body.menu-opened #toTopnbt {
+left: 280px;
+}
+.showSidenbt, .showSearchnbt {
+position: fixed;
+bottom: 3em;
+left: 0;
+background: #292929;
+color: #727272;
+width: 4rem;
+height: 4rem;
+line-height: 4rem;
+text-align: center;
+cursor: pointer;
+z-index: 99;
+font-size: 13px;
+-webkit-border-top-right-radius: 3px;
+-webkit-border-bottom-right-radius: 3px;
+-moz-border-radius-topright: 3px;
+-moz-border-radius-bottomright: 3px;
+border-top-right-radius: 3px;
+border-bottom-right-radius: 3px;
+-o-transition: left .3s ease-in-out, width .2s ease-in-out, padding-left .2s ease-in-out, color .3s ease-in-out;
+-moz-transition: left .3s ease-in-out, width .2s ease-in-out, padding-left .2s ease-in-out, color .3s ease-in-out;
+-webkit-transition: left .3s ease-in-out, width .2s ease-in-out, padding-left .2s ease-in-out, color .3s ease-in-out;
+transition: left .3s ease-in-out, width .2s ease-in-out, padding-left .2s ease-in-out, color .3s ease-in-out;
+}
+.showSearchnbt {
+bottom: 7em;
+}
+.sidebarButtonnbt:before {
+display: inline-block;
+font-family: FontAwesome;
+font-style: normal;
+font-weight: normal;
+line-height: 1;
+-webkit-font-smoothing: antialiased;
+-moz-osx-font-smoothing: grayscale;
+content: "\f0c9";
+}
+body.menu-opened .sidebarButtonnbt:before {
+content: "\f00d";
+}
+#toTopnbt {
+display: none;
+position: fixed;
+left: 0;
+width: 4rem;
+height: 4rem;
+line-height: 4rem;
+background: #292929;
+color: #727272;
+text-decoration: none;
+text-align: center;
+cursor: pointer;
+z-index: 99;
+-o-transition: left .3s ease-in-out, width .2s ease-in-out, padding-left .2s ease-in-out, color .3s ease-in-out;
+-moz-transition: left .3s ease-in-out, width .2s ease-in-out, padding-left .2s ease-in-out, color .3s ease-in-out;
+-webkit-transition: left .3s ease-in-out, width .2s ease-in-out, padding-left .2s ease-in-out, color .3s ease-in-out;
+transition: left .3s ease-in-out, width .2s ease-in-out, padding-left .2s ease-in-out, color .3s ease-in-out;
+}
+.showTopnbt {
+bottom: 7em;
+font-size: 13px;
+-webkit-border-top-right-radius: 3px;
+-webkit-border-bottom-right-radius: 3px;
+-moz-border-radius-topright: 3px;
+-moz-border-radius-bottomright: 3px;
+border-top-right-radius: 3px;
+border-bottom-right-radius: 3px;
+}
+.withS {
+bottom: 11em;
+}
+#toTopnbt:hover, .showSidenbt:hover, .showSearchnbt:hover {
+text-decoration: none;
+width: 5rem;
+padding-left: 1rem;
+color: #ffffff;
+}
+#search-fullnbt {
+background: rgba(255,255,255,0.9);
+position: fixed;
+width: 100%;
+height: 100%;
+left: 0;
+top: 0;
+z-index: 100;
+display: none;
+}
+.search-containernbt {
+position: relative;
+top: 47%;
+width: 100%;
+max-width: 930px;
+padding: 0 1.5em;
+margin: 0 auto;
+}
+#close-searchnbt {
+display: inline-block;
+cursor: pointer;
+float: right;
+}
+.site-infonbt {
+float: left;
+}
+.site-infonbt a:hover {
+border-bottom: 1px dotted;
+}
+.site-socialnbt {
+float: right;
+}
+.site-socialnbt i.fa-facebook, .site-socialnbt i.fa-twitter, .site-socialnbt i.fa-google-plus, .site-socialnbt i.fa-linkedin,
+.site-socialnbt i.fa-instagram, .site-socialnbt i.fa-youtube, .site-socialnbt i.fa-pinterest, .site-socialnbt i.fa-tumblr, .site-socialnbt i.fa-rss {
+-o-transition: all .7s ease-in-out;
+-moz-transition: all .7s ease-in-out;
+-webkit-transition: all .7s ease-in-out;
+transition: all .7s ease-in-out;
+position: relative;
+}
+.site-socialnbt i.fa-facebook:hover, .site-socialnbt i.fa-twitter:hover, .site-socialnbt i.fa-google-plus:hover, .site-socialnbt i.fa-linkedin:hover,
+.site-socialnbt i.fa-instagram:hover, .site-socialnbt i.fa-youtube:hover, .site-socialnbt i.fa-pinterest:hover, .site-socialnbt i.fa-tumblr:hover, .site-socialnbt i.fa-rss:hover {
+-o-transition: all 0s ease-in-out;
+-moz-transition: all 0s ease-in-out;
+-webkit-transition: all 0s ease-in-out;
+transition: all 0s ease-in-out;
+}
+.site-socialnbt i.fa-facebook:hover {color: #3b5998;}
+.site-socialnbt i.fa-twitter:hover {color: #00aced;}
+.site-socialnbt i.fa-google-plus:hover {color: #dd4b39;}
+.site-socialnbt i.fa-linkedin:hover {color: #007bb6;}
+.site-socialnbt i.fa-instagram:hover {color: #517fa4;}
+.site-socialnbt i.fa-youtube:hover {color: #bb0000;}
+.site-socialnbt i.fa-pinterest:hover {color: #cb2027;}
+.site-socialnbt i.fa-tumblr:hover {color: #32506d;}
+.site-socialnbt i.fa-rss:hover {color: #ffffff;}
+/*--------------------------------------------------------------
+10.1 Posts and pages
+--------------------------------------------------------------*/
+.hentry {
+margin: 0 0 3em;
+}
+.entry-content {
+margin: 1.5em 0 0;
+}
+.entry-metanbt {
+text-align: center;
+text-transform: uppercase;
+margin-top: 0.5em;
+color: #292929;
+font-weight: 700;
+font-family: Open Sans;
+}
+.entry-footer a {
+background: #292929;
+color: #ffffff;
+padding: 7px;
+margin: 1px;
+display: inline-block;
+border: 1px solid transparent;
+border-radius: 3px;
+font-weight: 700;
+-o-transition: all .7s ease-in-out;
+-moz-transition: all .7s ease-in-out;
+-webkit-transition: all .7s ease-in-out;
+transition: all .7s ease-in-out;
+}
+.entry-footer a:hover {
+background: transparent;
+border: 1px solid #292929;
+color: #292929;
+-o-transition: all 0s ease-in-out;
+-moz-transition: all 0s ease-in-out;
+-webkit-transition: all 0s ease-in-out;
+transition: all 0s ease-in-out;
+}
+/*--------------------------------------------------------------
+10.2 Asides
+--------------------------------------------------------------*/
+#secondarynbt .widget ul {
+margin: 0;
+padding: 0;
+list-style-type: none;
+}
+#secondarynbt .widget ul li {
+padding: 0.5em 0;
+}
+/*
+aside ul li ul.sub-menu, aside ul li ul.children {
+padding-left: 5%;
+}
+aside ul li ul.sub-menu li, aside ul li ul.children li {
+padding-top: 1em;
+}
+*/
+#secondarynbt .widget h2 {
+letter-spacing: -1px;
+text-align: center;
+margin-bottom: 1.5em;
+text-transform: uppercase;
+color: #ffffff;
+font-size: 18px;
+}
+#secondarynbt .widget h3 {
+letter-spacing: -1px;
+text-align: center;
+margin-bottom: 1.5em;
+text-transform: uppercase;
+color: #ffffff;
+font-size: 18px;
+}
+/*--------------------------------------------------------------
+12.0 Media
+--------------------------------------------------------------*/
+/* Make sure embeds and iframes fit their containers */
+embed,
+iframe,
+object {
+max-width: 100%;
+}
+@media all and (max-width: 1100px) {
+#pagenbt {
+margin: 0 auto;
+}
+}
+@media all and (max-width: 767px) {
+#search-fullnbt input[type="text"] {
+font-size: 100%;
+}
+.site-headernbt, .site-contentnbt, .site-footernbt {
+padding: 1.5em 2.5em;
+}
+.site-headernbt {
+padding: 1.5em 2.5em 0;
+}
+.site-contentnbt {
+padding: 0em 2.5em;
+}
+.site-infonbt, .site-socialnbt {
+float: none;
+text-align: center;
+}
+.site-socialnbt {
+padding-top: 0.5em;
+}
+.hentry {
+margin: 0 0 1.5em;
+}
+.entry-header, .main-navigationnbt {
+margin-top: 1.5em;
+}
+}
+@media all and (max-width: 479px) {
+.showSidenbt, .showSearchnbt {
+width: 3.5rem;
+height: 3.5rem;
+line-height: 3.5rem;
+}
+.site-headernbt, .site-contentnbt, .site-footernbt {
+padding: 1.5em 1.5em;
+}
+.site-headernbt {
+padding: 1.5em 1.5em 0;
+}
+.site-contentnbt {
+padding: 0em 1.5em;
+}
+.menu-togglenbt, .main-navigationnbt.toggled .nav-menu {
+padding: 1.5em 0.5em;
+}
+#toTopnbt:hover, .showSidenbt:hover, .showSearchnbt:hover {
+text-decoration: none;
+width: 3.5rem;
+padding-left: 0;
+color: #ffffff;
+}
+.entry-metanbt > span {
+/*
+display: block !important;
+margin-top: 10px;
+*/
+}
+}
+/*--------------------------------------------------------------
+Print Style
+--------------------------------------------------------------*/
+@media print {
+#toTopnbt, .showSidenbt, .showSearchnbt {
+display: none;
+}
+}
+h2.date-header {
+margin: 10px 0px;
+display: none;
+}
+.main .widget {
+margin: 0 0 5px;
+padding: 0 0 2px;
+}
+.main .Blog {
+border-bottom-width: 0;
+}
+#header .description {
+}
+/* Comments----------------------------------------------- */
+#comments {
+padding:10px;
+margin-bottom:20px;
+}
+#comments h4 {
+font-size:22px;
+margin-bottom:10px;
+}
+#comments ol {
+list-style: none;
+margin:0;
+}
+.deleted-comment {
+font-style: italic;
+color: gray;
+}
+#blog-pager-newer-link {
+float: left;
+}
+#blog-pager-older-link {
+float: right;
+}
+#blog-pager {
+text-align: center;
+padding:5px;
+margin:10px 0;
+}
+.feed-links {
+clear: both;
+margin: 0 0 10px 0;
+}
+.comment-form {
+}
+#navbar-iframe {
+height: 0;
+visibility: hidden;
+display: none;
+}
+.author-profile {
+background: #f6f6f6;
+border: 1px solid #eee;
+margin: 10px 0 10px 0;
+padding: 8px;
+overflow: hidden;
+}
+.author-profile img {
+border: 1px solid #ddd;
+float: left;
+margin-right: 10px;
+}
+.post-iconspbt {
+margin: 5px 0 0 0;
+padding: 0px;
+}
+.post-locationpbt {
+margin: 5px 0;
+padding: 0px;
+}
+.related-postbwrap {
+margin: 10px auto 0;
+}
+.related-postbwrap h4 {
+font-weight: bold;
+margin: 10px 0;
+}
+.related-post-style-2,.related-post-style-2 li {
+list-style: none;
+margin: 0;
+padding: 0;
+}
+.related-post-style-2 li {
+border-top: 0px solid #eee;
+overflow: hidden;
+padding: 10px 0px;
+}
+.related-post-style-2 li:first-child {
+border-top: none;
+}
+.related-post-style-2 .related-post-item-thumbnail {
+width: 80px;
+height: 80px;
+max-width: none;
+max-height: none;
+background-color: transparent;
+border: none;
+float: left;
+margin: 2px 10px 0 0;
+padding: 0;
+}
+.related-post-style-2 .related-post-item-title {
+font-weight: normal;
+font-size: 100%;
+}
+.related-post-style-2 .related-post-item-summary {
+display: block;
+}
+.pbtsharethisbutt {
+overflow: hidden;
+padding: 20px 0 5px;
+margin: 0;
+font-weight:bold;
+text-align:center;
+text-transform: uppercase;
+font-family: Open Sans;
+}
+.pbtsharethisbutt a {
+margin: 0 15px 0 0;
+}
+.separator a[style="margin-left: 1em; margin-right: 1em;"] {margin-left: auto!important;margin-right: auto!important;}
+.separator a[style="clear: left; float: left; margin-bottom: 1em; margin-right: 1em;"] {clear: none !important; float: none !important; margin-bottom: 0em !important; margin-right: 0em !important;}
+.separator a[style="clear: left; float: left; margin-bottom: 1em; margin-right: 1em;"] img {float: left !important; margin: 0px 10px 10px 0px;}
+.separator a[style="clear: right; float: right; margin-bottom: 1em; margin-left: 1em;"] {clear: none !important; float: none !important; margin-bottom: 0em !important; margin-left: 0em !important;}
+.separator a[style="clear: right; float: right; margin-bottom: 1em; margin-left: 1em;"] img {float: right !important; margin: 0px 0px 10px 10px;}
+.PopularPosts .widget-content ul li {
+padding:6px 0px;
+}
+.reaction-buttons table{
+border:none;
+margin-bottom:5px;
+}
+.reaction-buttons table, .reaction-buttons td{
+border:none !important;
+}
+.pbtthumbimg {
+float:left;
+margin:0px 10px 5px 0px;
+padding:4px;
+border:0px solid #eee;
+background:none;
+width:220px;
+height:auto;
+}
+.status-msg-wrap {
+margin: 25px auto 10px;
+}
+
+--></style>
+<script src="./Building Your Own XSS Hunter in AWS _ SmeegeSec_files/cb=gapi.loaded_2" async=""></script><script src="./Building Your Own XSS Hunter in AWS _ SmeegeSec_files/cb=gapi.loaded_1" async=""></script><script src="./Building Your Own XSS Hunter in AWS _ SmeegeSec_files/cb=gapi(1).loaded_0" async=""></script><script src="./Building Your Own XSS Hunter in AWS _ SmeegeSec_files/jquery.min.js.下载" type="text/javascript"></script>
+<script type="text/javascript">
+//<![CDATA[
+
+/*! jQuery Migrate v1.2.1 | (c) 2005, 2013 jQuery Foundation, Inc. and other contributors | jquery.org/license */
+jQuery.migrateMute===void 0&&(jQuery.migrateMute=!0),function(e,t,n){function r(n){var r=t.console;i[n]||(i[n]=!0,e.migrateWarnings.push(n),r&&r.warn&&!e.migrateMute&&(r.warn("JQMIGRATE: "+n),e.migrateTrace&&r.trace&&r.trace()))}function a(t,a,i,o){if(Object.defineProperty)try{return Object.defineProperty(t,a,{configurable:!0,enumerable:!0,get:function(){return r(o),i},set:function(e){r(o),i=e}}),n}catch(s){}e._definePropertyBroken=!0,t[a]=i}var i={};e.migrateWarnings=[],!e.migrateMute&&t.console&&t.console.log&&t.console.log("JQMIGRATE: Logging is active"),e.migrateTrace===n&&(e.migrateTrace=!0),e.migrateReset=function(){i={},e.migrateWarnings.length=0},"BackCompat"===document.compatMode&&r("jQuery is not compatible with Quirks Mode");var o=e("<input/>",{size:1}).attr("size")&&e.attrFn,s=e.attr,u=e.attrHooks.value&&e.attrHooks.value.get||function(){return null},c=e.attrHooks.value&&e.attrHooks.value.set||function(){return n},l=/^(?:input|button)$/i,d=/^[238]$/,p=/^(?:autofocus|autoplay|async|checked|controls|defer|disabled|hidden|loop|multiple|open|readonly|required|scoped|selected)$/i,f=/^(?:checked|selected)$/i;a(e,"attrFn",o||{},"jQuery.attrFn is deprecated"),e.attr=function(t,a,i,u){var c=a.toLowerCase(),g=t&&t.nodeType;return u&&(4>s.length&&r("jQuery.fn.attr( props, pass ) is deprecated"),t&&!d.test(g)&&(o?a in o:e.isFunction(e.fn[a])))?e(t)[a](i):("type"===a&&i!==n&&l.test(t.nodeName)&&t.parentNode&&r("Can't change the 'type' of an input or button in IE 6/7/8"),!e.attrHooks[c]&&p.test(c)&&(e.attrHooks[c]={get:function(t,r){var a,i=e.prop(t,r);return i===!0||"boolean"!=typeof i&&(a=t.getAttributeNode(r))&&a.nodeValue!==!1?r.toLowerCase():n},set:function(t,n,r){var a;return n===!1?e.removeAttr(t,r):(a=e.propFix[r]||r,a in t&&(t[a]=!0),t.setAttribute(r,r.toLowerCase())),r}},f.test(c)&&r("jQuery.fn.attr('"+c+"') may use property instead of attribute")),s.call(e,t,a,i))},e.attrHooks.value={get:function(e,t){var n=(e.nodeName||"").toLowerCase();return"button"===n?u.apply(this,arguments):("input"!==n&&"option"!==n&&r("jQuery.fn.attr('value') no longer gets properties"),t in e?e.value:null)},set:function(e,t){var a=(e.nodeName||"").toLowerCase();return"button"===a?c.apply(this,arguments):("input"!==a&&"option"!==a&&r("jQuery.fn.attr('value', val) no longer sets properties"),e.value=t,n)}};var g,h,v=e.fn.init,m=e.parseJSON,y=/^([^<]*)(<[\w\W]+>)([^>]*)$/;e.fn.init=function(t,n,a){var i;return t&&"string"==typeof t&&!e.isPlainObject(n)&&(i=y.exec(e.trim(t)))&&i[0]&&("<"!==t.charAt(0)&&r("$(html) HTML strings must start with '<' character"),i[3]&&r("$(html) HTML text after last tag is ignored"),"#"===i[0].charAt(0)&&(r("HTML string cannot start with a '#' character"),e.error("JQMIGRATE: Invalid selector string (XSS)")),n&&n.context&&(n=n.context),e.parseHTML)?v.call(this,e.parseHTML(i[2],n,!0),n,a):v.apply(this,arguments)},e.fn.init.prototype=e.fn,e.parseJSON=function(e){return e||null===e?m.apply(this,arguments):(r("jQuery.parseJSON requires a valid JSON string"),null)},e.uaMatch=function(e){e=e.toLowerCase();var t=/(chrome)[ \/]([\w.]+)/.exec(e)||/(webkit)[ \/]([\w.]+)/.exec(e)||/(opera)(?:.*version|)[ \/]([\w.]+)/.exec(e)||/(msie) ([\w.]+)/.exec(e)||0>e.indexOf("compatible")&&/(mozilla)(?:.*? rv:([\w.]+)|)/.exec(e)||[];return{browser:t[1]||"",version:t[2]||"0"}},e.browser||(g=e.uaMatch(navigator.userAgent),h={},g.browser&&(h[g.browser]=!0,h.version=g.version),h.chrome?h.webkit=!0:h.webkit&&(h.safari=!0),e.browser=h),a(e,"browser",e.browser,"jQuery.browser is deprecated"),e.sub=function(){function t(e,n){return new t.fn.init(e,n)}e.extend(!0,t,this),t.superclass=this,t.fn=t.prototype=this(),t.fn.constructor=t,t.sub=this.sub,t.fn.init=function(r,a){return a&&a instanceof e&&!(a instanceof t)&&(a=t(a)),e.fn.init.call(this,r,a,n)},t.fn.init.prototype=t.fn;var n=t(document);return r("jQuery.sub() is deprecated"),t},e.ajaxSetup({converters:{"text json":e.parseJSON}});var b=e.fn.data;e.fn.data=function(t){var a,i,o=this[0];return!o||"events"!==t||1!==arguments.length||(a=e.data(o,t),i=e._data(o,t),a!==n&&a!==i||i===n)?b.apply(this,arguments):(r("Use of jQuery.fn.data('events') is deprecated"),i)};var j=/\/(java|ecma)script/i,w=e.fn.andSelf||e.fn.addBack;e.fn.andSelf=function(){return r("jQuery.fn.andSelf() replaced by jQuery.fn.addBack()"),w.apply(this,arguments)},e.clean||(e.clean=function(t,a,i,o){a=a||document,a=!a.nodeType&&a[0]||a,a=a.ownerDocument||a,r("jQuery.clean() is deprecated");var s,u,c,l,d=[];if(e.merge(d,e.buildFragment(t,a).childNodes),i)for(c=function(e){return!e.type||j.test(e.type)?o?o.push(e.parentNode?e.parentNode.removeChild(e):e):i.appendChild(e):n},s=0;null!=(u=d[s]);s++)e.nodeName(u,"script")&&c(u)||(i.appendChild(u),u.getElementsByTagName!==n&&(l=e.grep(e.merge([],u.getElementsByTagName("script")),c),d.splice.apply(d,[s+1,0].concat(l)),s+=l.length));return d});var Q=e.event.add,x=e.event.remove,k=e.event.trigger,N=e.fn.toggle,T=e.fn.live,M=e.fn.die,S="ajaxStart|ajaxStop|ajaxSend|ajaxComplete|ajaxError|ajaxSuccess",C=RegExp("\\b(?:"+S+")\\b"),H=/(?:^|\s)hover(\.\S+|)\b/,A=function(t){return"string"!=typeof t||e.event.special.hover?t:(H.test(t)&&r("'hover' pseudo-event is deprecated, use 'mouseenter mouseleave'"),t&&t.replace(H,"mouseenter$1 mouseleave$1"))};e.event.props&&"attrChange"!==e.event.props[0]&&e.event.props.unshift("attrChange","attrName","relatedNode","srcElement"),e.event.dispatch&&a(e.event,"handle",e.event.dispatch,"jQuery.event.handle is undocumented and deprecated"),e.event.add=function(e,t,n,a,i){e!==document&&C.test(t)&&r("AJAX events should be attached to document: "+t),Q.call(this,e,A(t||""),n,a,i)},e.event.remove=function(e,t,n,r,a){x.call(this,e,A(t)||"",n,r,a)},e.fn.error=function(){var e=Array.prototype.slice.call(arguments,0);return r("jQuery.fn.error() is deprecated"),e.splice(0,0,"error"),arguments.length?this.bind.apply(this,e):(this.triggerHandler.apply(this,e),this)},e.fn.toggle=function(t,n){if(!e.isFunction(t)||!e.isFunction(n))return N.apply(this,arguments);r("jQuery.fn.toggle(handler, handler...) is deprecated");var a=arguments,i=t.guid||e.guid++,o=0,s=function(n){var r=(e._data(this,"lastToggle"+t.guid)||0)%o;return e._data(this,"lastToggle"+t.guid,r+1),n.preventDefault(),a[r].apply(this,arguments)||!1};for(s.guid=i;a.length>o;)a[o++].guid=i;return this.click(s)},e.fn.live=function(t,n,a){return r("jQuery.fn.live() is deprecated"),T?T.apply(this,arguments):(e(this.context).on(t,this.selector,n,a),this)},e.fn.die=function(t,n){return r("jQuery.fn.die() is deprecated"),M?M.apply(this,arguments):(e(this.context).off(t,this.selector||"**",n),this)},e.event.trigger=function(e,t,n,a){return n||C.test(e)||r("Global events are undocumented and deprecated"),k.call(this,e,t,n||document,a)},e.each(S.split("|"),function(t,n){e.event.special[n]={setup:function(){var t=this;return t!==document&&(e.event.add(document,n+"."+e.guid,function(){e.event.trigger(n,null,t,!0)}),e._data(this,n,e.guid++)),!1},teardown:function(){return this!==document&&e.event.remove(document,n+"."+e._data(this,n)),!1}}})}(jQuery,window);
+
+//]]>
+</script>
+<script type="text/javascript">
+//<![CDATA[
+
+function showrecentcomments(json){for(var i=0;i<a_rc;i++){var b_rc=json.feed.entry[i];var c_rc;if(i==json.feed.entry.length)break;for(var k=0;k<b_rc.link.length;k++){if(b_rc.link[k].rel=='alternate'){c_rc=b_rc.link[k].href;break;}}c_rc=c_rc.replace("#","#comment-");var d_rc=c_rc.split("#");d_rc=d_rc[0];var e_rc=d_rc.split("/");e_rc=e_rc[5];e_rc=e_rc.split(".html");e_rc=e_rc[0];var f_rc=e_rc.replace(/-/g," ");f_rc=f_rc.link(d_rc);var g_rc=b_rc.published.$t;var h_rc=g_rc.substring(0,4);var i_rc=g_rc.substring(5,7);var j_rc=g_rc.substring(8,10);var k_rc=new Array();k_rc[1]="Jan";k_rc[2]="Feb";k_rc[3]="Mar";k_rc[4]="Apr";k_rc[5]="May";k_rc[6]="Jun";k_rc[7]="Jul";k_rc[8]="Aug";k_rc[9]="Sep";k_rc[10]="Oct";k_rc[11]="Nov";k_rc[12]="Dec";if("content" in b_rc){var l_rc=b_rc.content.$t;}else if("summary" in b_rc){var l_rc=b_rc.summary.$t;}else var l_rc="";var re=/<\S[^>]*>/g;l_rc=l_rc.replace(re,"");if(m_rc==true)document.write('On '+k_rc[parseInt(i_rc,10)]+' '+j_rc+' ');document.writ="'+c_rc+'">'+b_rc.author[0].name.$t+'</a> commented');if(n_rc==true)document.write(' on '+f_rc);document.write(': ');if(l_rc.length<o_rc){document.write('<i>&#8220;');document.write(l_rc);document.write('&#8221;</i><br/><br/>');}else{document.write('<i>&#8220;');l_rc=l_rc.substring(0,o_rc);var p_rc=l_rc.lastIndexOf(" ");l_rc=l_rc.substring(0,p_rc);document.write(l_rc+'&hellip;&#8221;</i>');document.write('<br/><br/>');}}}
+
+function rp(json){document.write('<ul>');for(var i=0;i<numposts;i++){document.write('<li>');var entry=json.feed.entry[i];var posttitle=entry.title.$t;var posturl;if(i==json.feed.entry.length)break;for(var k=0;k<entry.link.length;k++){if(entry.link[k].rel=='alternate'){posturl=entry.link[k].href;break}}posttitle=posttitle.link(posturl);var readmorelink="(more)";readmorelink=readmorelink.link(posturl);var postdate=entry.published.$t;var cdyear=postdate.substring(0,4);var cdmonth=postdate.substring(5,7);var cdday=postdate.substring(8,10);var monthnames=new Array();monthnames[1]="Jan";monthnames[2]="Feb";monthnames[3]="Mar";monthnames[4]="Apr";monthnames[5]="May";monthnames[6]="Jun";monthnames[7]="Jul";monthnames[8]="Aug";monthnames[9]="Sep";monthnames[10]="Oct";monthnames[11]="Nov";monthnames[12]="Dec";if("content"in entry){var postcontent=entry.content.$t}else if("summary"in entry){var postcontent=entry.summary.$t}else var postcontent="";var re=/<\S[^>]*>/g;postcontent=postcontent.replace(re,"");document.write(posttitle);if(showpostdate==true)document.write(' - '+monthnames[parseInt(cdmonth,10)]+' '+cdday);if(showpostsummary==true){if(postcontent.length<numchars){document.write(postcontent)}else{postcontent=postcontent.substring(0,numchars);var quoteEnd=postcontent.lastIndexOf(" ");postcontent=postcontent.substring(0,quoteEnd);document.write(postcontent+'...'+readmorelink)}}document.write('</li>')}document.write('</ul>')}
+
+//]]>
+</script>
+<script type="text/javascript">
+summary_noimg = 300;
+summary_img = 240;
+img_thumb_height = 150;
+img_thumb_width = 200; 
+</script>
+<script type="text/javascript">
+//<![CDATA[
+
+function removeHtmlTag(strx,chop){ 
+	if(strx.indexOf("<")!=-1)
+	{
+		var s = strx.split("<"); 
+		for(var i=0;i<s.length;i++){ 
+			if(s[i].indexOf(">")!=-1){ 
+				s[i] = s[i].substring(s[i].indexOf(">")+1,s[i].length); 
+			} 
+		} 
+		strx =  s.join(""); 
+	}
+	chop = (chop < strx.length-1) ? chop : strx.length-2; 
+	while(strx.charAt(chop-1)!=' ' && strx.indexOf(' ',chop)!=-1) chop++; 
+	strx = strx.substring(0,chop-1); 
+	return strx+'...'; 
+}
+
+function createSummaryAndThumb(pID){
+	var div = document.getElementById(pID);
+	var imgtag = "";
+	var img = div.getElementsByTagName("img");
+	var summ = summary_noimg;
+	if(img.length>=1) {	
+		imgtag = '<img src="'+img[0].src+'" class="pbtthumbimg"/>';
+		summ = summary_img;
+	}
+	
+	var summary = imgtag + '<div>' + removeHtmlTag(div.innerHTML,summ) + '</div>';
+	div.innerHTML = summary;
+}
+
+//]]>
+</script>
+<style type="text/css">
+body, button, input, select, textarea {color: #404040;}
+</style>
+<link href="./Building Your Own XSS Hunter in AWS _ SmeegeSec_files/authorization.css" media="all" onload="if(media!=&#39;all&#39;)media=&#39;all&#39;" rel="stylesheet"><noscript><link href='https://www.blogger.com/dyn-css/authorization.css?targetBlogID=8845853463796109471&amp;zx=75ef8194-05aa-4269-8da7-3beb964ca81d' rel='stylesheet'/></noscript>
+
+<script type="text/javascript" src="./Building Your Own XSS Hunter in AWS _ SmeegeSec_files/summary"></script><script type="text/javascript" src="./Building Your Own XSS Hunter in AWS _ SmeegeSec_files/f.txt"></script><script async="" src="./Building Your Own XSS Hunter in AWS _ SmeegeSec_files/lazy.min.js.下载"></script><style> .gc-bubbleDefault{background-color:transparent !important;text-align:left;padding:0 !important;margin:0 !important;border:0 !important;table-layout:auto !important}.gc-reset{background-color:transparent !important;border:0 !important;padding:0 !important;margin:0 !important;text-align:left}.pls-bubbleTop{border-bottom:1px solid #ccc !important}.pls-topTail,.pls-vertShimLeft,.pls-contentLeft{background-image:url(//ssl.gstatic.com/s2/oz/images/stars/po/bubblev1/border_3.gif) !important}.pls-topTail{background-repeat:repeat-x !important;background-position:bottom !important}.pls-vertShim{background-color:#fff !important;text-align:right}.tbl-grey .pls-vertShim{background-color:#f5f5f5 !important}.pls-vertShimLeft{background-repeat:repeat-y !important;background-position:right !important;height:4px}.pls-vertShimRight{height:4px}.pls-confirm-container .pls-vertShim{background-color:#fff3c2 !important}.pls-contentWrap{background-color:#fff !important;position:relative !important;vertical-align:top}.pls-contentLeft{background-repeat:repeat-y;background-position:right;vertical-align:top}.pls-dropRight{background-image:url(//ssl.gstatic.com/s2/oz/images/stars/po/bubblev1/bubbleDropR_3.png) !important;background-repeat:repeat-y !important;vertical-align:top}.pls-vert,.pls-tailleft,.pls-dropTR .pls-dropBR,.pls-dropBL,.pls-vert img{vertical-align:top}.pls-dropBottom{background-image:url(//ssl.gstatic.com/s2/oz/images/stars/po/bubblev1/bubbleDropB_3.png) !important;background-repeat:repeat-x !important;width:100%;vertical-align:top}.pls-topLeft{background:inherit !important;text-align:right;vertical-align:bottom}.pls-topRight{background:inherit !important;text-align:left;vertical-align:bottom}.pls-bottomLeft{background:inherit !important;text-align:right}.pls-bottomRight{background:inherit !important;text-align:left;vertical-align:top}.pls-tailtop,.pls-tailright,.pls-tailbottom,.pls-tailleft{display:none;position:relative}.pls-tailbottom,.pls-tailtop,.pls-tailright,.pls-tailleft,.pls-dropTR,.pls-dropBR,.pls-dropBL{background-image:url(//ssl.gstatic.com/s2/oz/images/stars/po/bubblev1/bubbleSprite_3.png) !important;background-repeat:no-repeat}.tbl-grey .pls-tailbottom,.tbl-grey .pls-tailtop,.tbl-grey .pls-tailright,.tbl-grey .pls-tailleft,.tbl-grey .pls-dropTR,.tbl-grey .pls-dropBR,.tbl-grey .pls-dropBL{background-image:url(//ssl.gstatic.com/s2/oz/images/stars/po/bubblev1/bubbleSprite-grey.png) !important}.pls-tailbottom{background-position:-23px 0}.pls-confirm-container .pls-tailbottom{background-position:-23px -10px}.pls-tailtop{background-position:-19px -20px}.pls-tailright{background-position:0 0}.pls-tailleft{background-position:-10px 0}.pls-tailtop{vertical-align:top}.gc-bubbleDefault td{line-height:0;font-size:0}.pls-topLeft img,.pls-topRight img,.pls-tailbottom{vertical-align:bottom}.pls-bottomLeft img,.bubbleDropTR,.pls-dropBottomL img,.pls-dropBottom img,.pls-dropBottomR img,.pls-bottomLeft{vertical-align:top}.pls-dropTR{background-position:0 -22px}.pls-dropBR{background-position:0 -27px}.pls-dropBL{background-position:0 -16px}.pls-spacertop,.pls-spacerright,.pls-spacerbottom,.pls-spacerleft{position:static !important}.pls-spinner{bottom:0;position:absolute;left:0;margin:auto;right:0;top:0}</style><script type="text/javascript" src="./Building Your Own XSS Hunter in AWS _ SmeegeSec_files/summary(1)"></script></head>
+<body>
+<div class="sitenbt" id="pagenbt">
+<header class="site-headernbt" id="mastheadnbt" role="banner">
+<div class="site-brandingnbt">
+<div class="headersec section" id="headersec"><div class="widget Header" data-version="1" id="Header1">
+<div id="header-inner">
+<div class="titlewrapper">
+<h1 class="site-titlenbt">
+<a href="http://smeegesec.com/"><font color="#005fa6">smeege</font><font color="#727272">sec</font></a>
+</h1>
+</div>
+<h2 class="site-descriptionnbt">InfoSec Research &amp; Development</h2>
+</div>
+</div></div>
+</div>
+<nav class="main-navigationnbt smallPartnbt" id="site-navigationnbt" role="navigation">
+<button class="menu-togglenbt">Main Menu<i class="fa fa-align-justify"></i></button>
+<div class="menu-nbt-menu-container">
+<ul class="menunbt nav-menu">
+<!-- <li><a expr:href='data:blog.homepageUrl'>Home</a></li> -->
+<li class="menunbt"><a href="http://www.smeegesec.com/">Home</a></li>
+<li><a href="http://www.smeegesec.com/p/about.html">About</a></li>
+<li><a href="http://www.smeegesec.com/p/resources.html">Resources</a></li>
+<li><a href="http://www.smeegesec.com/p/contact.html">Contact</a></li>
+</ul>
+</div>
+</nav><!-- #site-navigation -->
+</header><!-- #masthead -->
+<div class="site-contentnbt" id="contentnbt">
+<div class="content-areanbt" id="primarynbt">
+<div class="site-mainnbt" id="mainnbt" role="main">
+<div class="mainblogsec section" id="mainblogsec"><div class="widget Blog" data-version="1" id="Blog1">
+<div class="blog-posts hfeed">
+<!--Can't find substitution for tag [defaultAdStart]-->
+
+          <div class="date-outer">
+        
+<h2 class="date-header"><span>Monday, July 23, 2018</span></h2>
+
+          <div class="date-posts">
+        
+<div class="post-outer">
+<article class="post hentry" itemprop="blogPost" itemscope="itemscope" itemtype="http://schema.org/BlogPosting">
+<meta content="https://2.bp.blogspot.com/-HTWTDFc0biQ/W1JttTx7zZI/AAAAAAAAAlk/o-FGnUnUF3kY3W4qNT54ALzUsxGfaowFwCLcBGAs/s640/NameCheap-DNS.png" itemprop="image">
+<a name="4725598423524496743"></a>
+<header class="entry-header">
+<h2 class="post-title entry-title" itemprop="name">
+<a href="https://www.smeegesec.com/2018/07/building-your-own-xss-hunter-in-aws.html">Building Your Own XSS Hunter in AWS</a>
+</h2>
+<div class="entry-metanbt smallPartnbt">
+<meta content="https://www.smeegesec.com/2018/07/building-your-own-xss-hunter-in-aws.html" itemprop="url"><i class="fa fa-clock-o spaceLeftRight"></i>
+<a class="timestamp-link" href="https://www.smeegesec.com/2018/07/building-your-own-xss-hunter-in-aws.html" rel="bookmark" title="permanent link"><span class="published updated" itemprop="datePublished" title="2018-07-23T16:29:00-07:00">7/23/2018</span></a>&nbsp;
+<i class="fa fa-user spaceLeftRight"></i>
+<span class="post-author vcard"><span class="fn" itemprop="author" itemscope="itemscope" itemtype="http://schema.org/Person"><meta content="https://www.blogger.com/profile/14633686433200305556" itemprop="url"><a class="g-profile" href="https://www.blogger.com/profile/14633686433200305556" rel="author" title="author profile" data-gapiscan="true" data-onload="true" data-gapiattached="true"><span itemprop="name">SmeegeSec</span></a></span></span>&nbsp;
+<i class="fa fa-comments-o spaceLeftRight"></i>
+<a href="https://www.smeegesec.com/2018/07/building-your-own-xss-hunter-in-aws.html#comment-form" onclick="">No comments</a>&nbsp;
+<span class="item-control blog-admin pid-1133900050">
+<a href="https://www.blogger.com/post-edit.g?blogID=8845853463796109471&amp;postID=4725598423524496743&amp;from=pencil" title="Edit Post">
+<img alt="" class="icon-action" height="18" src="./Building Your Own XSS Hunter in AWS _ SmeegeSec_files/icon18_edit_allbkg.gif" width="18">
+</a>
+</span>
+</div>
+<div class="beforeContentnbt"></div>
+</header>
+<div class="post-header-line-1"></div>
+<div class="post-body entry-content" id="post-body-4725598423524496743" itemprop="articleBody">
+<p>
+XSS Hunter is a tool for finding cross-site scripting (XSS) vulnerabilities, including the elusive <a href="https://www.acunetix.com/blog/articles/blind-xss/">blind XSS</a>. A web version of the tool is available at <a href="https://xsshunter.com/">https://xsshunter.com</a> but as an employee or researcher you may be worried about sending potentially sensitive information to a third party. Luckily the author @IAmMandatory released code with accompanying automation to make it easy to build your own instance of <a href="https://github.com/mandatoryprogrammer/xsshunter">XSS Hunter from GitHub</a>. The author also released a post on how to build that instance <a href="https://thehackerblog.com/xss-hunter-is-now-open-source-heres-how-to-set-it-up/index.html">here</a>, but I wanted to make a follow-up post which goes into further detail and uses an AWS EC2 instance for the server. AWS provides the ability to easily launch an EC2 instance, implement IP restrictions, and can be free.
+</p>
+<h4>You'll Need...</h4>
+<ul>
+<li>AWS account to launch an EC2 instance
+</li><li>Short Domain Name with the ability to configure DNS records
+</li><li><a href="https://www.mailgun.com/">Mailgun</a> account to send E-mail alerts with XSS Hunter
+</li><li>SSL Certificate (we will generate later)
+</li></ul>
+<h4>Step 1: Purchase and Configure Domain</h4>
+<p>
+A domain is the only cost associated with this post if you don’t already have one. You want a short domain, two or three characters, to give you a better chance of submitting your payload where character limit restrictions exist. I used <a href="https://www.namecheap.com/domains/domain-name-search.aspx">Namecheap</a> to search for and purchase my domain which ended up being 3 characters with a 2-character length TLD for about $20/year.
+
+In Namecheap configure the advanced DNS setting to the following, some of the data required is obtained from Step 2:
+</p><div class="separator" style="clear: both; text-align: center;"><a href="https://2.bp.blogspot.com/-HTWTDFc0biQ/W1JttTx7zZI/AAAAAAAAAlk/o-FGnUnUF3kY3W4qNT54ALzUsxGfaowFwCLcBGAs/s1600/NameCheap-DNS.png" imageanchor="1" style="margin-left: 1em; margin-right: 1em;"><img border="0" data-original-height="606" data-original-width="1600" height="242" src="./Building Your Own XSS Hunter in AWS _ SmeegeSec_files/NameCheap-DNS.png" width="640"></a></div>
+You can use <a href="https://www.whatsmydns.net/">https://www.whatsmydns.net</a> to check DNS propagation in real time.
+<p></p>
+<h4>Step 2: Create MailGun Account</h4>
+<p>
+Sign up for a Mailgun account and add a new domain.
+</p>
+<div class="separator" style="clear: both; text-align: center;"><a href="https://3.bp.blogspot.com/-ArEgi5qMKvs/W1JwC0gc3VI/AAAAAAAAAlw/yINOgFXmBa8Wgb9rvIjUmqMHG0j5kResQCLcBGAs/s1600/Mailgun-Domain.png" imageanchor="1" style="margin-left: 1em; margin-right: 1em;"><img border="0" data-original-height="321" data-original-width="1161" height="177" src="./Building Your Own XSS Hunter in AWS _ SmeegeSec_files/Mailgun-Domain.png" width="640"></a></div>
+<p>
+After adding the domain, you can access all of the information for it. Later during the setup of XSS Hunter you will be asked for the Mailgun API key. Additionally, in your Mailgun account you can access logs for auditing or to debug any issues with XSS Hunter’s alerts.
+</p>
+<div class="separator" style="clear: both; text-align: center;"><a href="https://1.bp.blogspot.com/-GBp6gj_4Jgg/W1JwHSYfm2I/AAAAAAAAAl0/xboooExJ7IMeGURR4CLkcZz3W0CzK6OawCLcBGAs/s1600/Mailgun-Domain2.png" imageanchor="1" style="margin-left: 1em; margin-right: 1em;"><img border="0" data-original-height="514" data-original-width="1229" height="268" src="./Building Your Own XSS Hunter in AWS _ SmeegeSec_files/Mailgun-Domain2.png" width="640"></a></div>
+<h4>Step 3: Generate SSL Certificates</h4>
+<p>
+XSS Hunter requires SSL to be configured but we can accomplish this for free. Visit https://www.sslforfree.com/ for Let’s Encrypt CA certificates. Enter your domain with a prepended asterisk to ensure it’s a wildcard cert, such as <b>*.tst.co</b>, a version of your domain with "<i>www</i>" will be appended automatically, now click “Create Free SSL Certificate.” Follow the instructions to perform manual verification using TXT records. To do this go back to the Advanced DNS page in Namecheap and create two TXT records, one with the host of  <b>_acme-challenge</b> and one with the host of <b>_acme-challenge.www</b>. You don’t need to include your domain name in these as Namecheap automatically appends it. Now for each host’s value, enter the corresponding unique string listed on the sslforfree page. Wait for propagation – usually it happens quickly, if not, ensure you have the proper TXT records configured. Now click the button “Download SSL Certificate.”</p>
+<div class="separator" style="clear: both; text-align: center;"><a href="https://1.bp.blogspot.com/-0eTSHbuvgiI/W1JwxcTdsFI/AAAAAAAAAmE/mNEEtirkVtkL27XBbsXPmcIAdkOqkVKCwCLcBGAs/s1600/SSL-For-Free.png" imageanchor="1" style="margin-left: 1em; margin-right: 1em;"><img border="0" data-original-height="801" data-original-width="1600" height="320" src="./Building Your Own XSS Hunter in AWS _ SmeegeSec_files/SSL-For-Free.png" width="640"></a></div>
+<p>Success!</p>
+<h4>Step 4: Launch AWS Instance</h4>
+<p>Login to your AWS account, navigate to EC2 Dashboard, and select “Launch Instance”. </p>
+<div class="separator" style="clear: both; text-align: center;"><a href="https://3.bp.blogspot.com/-KThXflgWrdQ/W1JxnI-612I/AAAAAAAAAmQ/KAWC1sS6wF8LoEjl_YN894mW-Z991RWDQCLcBGAs/s1600/AWS-Launch-Instance.png" imageanchor="1" style="margin-left: 1em; margin-right: 1em;"><img border="0" data-original-height="316" data-original-width="1104" height="183" src="./Building Your Own XSS Hunter in AWS _ SmeegeSec_files/AWS-Launch-Instance.png" width="640"></a></div>
+<p>For the AMI, choose “Ubuntu Server 16.04 LTS” which is included in the free tier.</p> 
+<div class="separator" style="clear: both; text-align: center;"><a href="https://4.bp.blogspot.com/-mRQQgdDxMe4/W1JxqOXjQbI/AAAAAAAAAmU/sX5ybW1OKCw-YfaHF-rgGptxjCqsnrA6QCLcBGAs/s1600/AWS-Launch-Instance2.png" imageanchor="1" style="margin-left: 1em; margin-right: 1em;"><img border="0" data-original-height="342" data-original-width="1600" height="137" src="./Building Your Own XSS Hunter in AWS _ SmeegeSec_files/AWS-Launch-Instance2.png" width="640"></a></div>
+<p>For the instance type choose the free tier eligible t2.micro with 1GB of memory and 8GB SSD Storage.</p>
+<div class="separator" style="clear: both; text-align: center;"><a href="https://3.bp.blogspot.com/-zFFel3NtlBI/W1JxqF0nJ1I/AAAAAAAAAmc/ThmmNXenNvIMRCnPjnQYHV_J4VBMnA3cACLcBGAs/s1600/AWS-Launch-Instance3.png" imageanchor="1" style="margin-left: 1em; margin-right: 1em;"><img border="0" data-original-height="374" data-original-width="1600" height="150" src="./Building Your Own XSS Hunter in AWS _ SmeegeSec_files/AWS-Launch-Instance3.png" width="640"></a></div>
+Lastly, modify your security settings by using an existing security group or creating a new security group. Here is where you can easily apply IP restrictions for your management service (port 22) and even on your web ports if you know for sure the IP ranges which could potentially call back with your triggered XSS payload.
+<div class="separator" style="clear: both; text-align: center;"><a href="https://3.bp.blogspot.com/-wqNlk6PhrZI/W1JxqCgkpVI/AAAAAAAAAmY/B0-PC3VS42Ypee4HNFv6_bUvGj3Eza8XQCLcBGAs/s1600/AWS-Launch-Instance4.png" imageanchor="1" style="margin-left: 1em; margin-right: 1em;"><img border="0" data-original-height="357" data-original-width="983" height="232" src="./Building Your Own XSS Hunter in AWS _ SmeegeSec_files/AWS-Launch-Instance4.png" width="640"></a></div>
+<p>Before launching the instance, make sure you specify an existing key pair or create a new key pair to access the server.</p>
+<h4>Step 5: Configure Ubuntu and XSS Hunter</h4>
+<p>First, let’s get our SSL certs onto Ubuntu, to do this we can use SCP with the following command to put them in the /tmp folder:<br><code>scp -i &lt;key.pem&gt; &lt;ssl .crt and .key files&gt; ubuntu@&lt;AMI public dns&gt;:/tmp/</code><br>
+Now access the server via SSH with the following command:<br>
+<code>ssh -i &lt;key.pem&gt; ubuntu@&lt;AMI public dns&gt;</code><br>
+</p>
+Perform the following commands to install the proper server dependencies (may require sudo):
+<ul>
+<li>apt update
+</li><li>apt upgrade
+</li><li>apt-get install python2.7
+</li><li>ln -s /usr/bin/python2.7 /usr/bin/python
+</li><li>apt-get install python-pip
+</li><li>pip install pyyaml
+</li><li>apt-get install nginx
+</li><li>apt-get install postgresql postgresql-contrib
+</li></ul>
+Set up a postgres user for XSS Hunter:
+<ul>
+<li>sudo -i -u postgres
+</li><li>psql template1
+</li><li>CREATE USER xsshunter WITH PASSWORD 'EXAMPLE_PASSWORD';
+</li><li>CREATE DATABASE xsshunter;
+</li><li>\q
+</li><li>exit
+</li></ul>
+The original author’s GitHub repo has a few issues which affect XSS Hunter from working properly, so I cloned a fork which addresses some of these: <a href="https://github.com/mystech7/xsshunter">https://github.com/mystech7/xsshunter</a>
+<ul>
+<li>git clone https://github.com/mystech7/xsshunter
+</li><li>cd xsshunter
+</li><li>./generate_config.py
+</li></ul>
+<div class="separator" style="clear: both; text-align: center;"><a href="https://1.bp.blogspot.com/-N3tBTqRTHV8/W1Y_vF5ZOlI/AAAAAAAAAm8/meufiVbSWP0JaylbulY6W7Afi_F34sYQACLcBGAs/s1600/XSS-Hunter-Config.png" imageanchor="1" style="margin-left: 1em; margin-right: 1em;"><img border="0" data-original-height="964" data-original-width="795" height="640" src="./Building Your Own XSS Hunter in AWS _ SmeegeSec_files/XSS-Hunter-Config.png" width="528"></a></div>
+You will now have a “default” and “config.yaml” file created. Run the following commands to finish setting up nginx:
+<ul>
+<li>sudo mv default /etc/nginx/sites-enabled/default
+</li><li>sudo mkdir /etc/nginx/ssl
+</li><li>sudo cp /tmp/{&lt;domain.key&gt;,&lt;domain.crt&gt;} /etc/nginx/ssl/
+</li><li>sudo service nginx restart
+</li><li>sudo apt-get install python-virtualenv python-dev libpq-dev libffi-dev
+</li></ul>
+Now we’re going to run python virtual environments to start our API and GUI servers:
+<ul>
+<li>tmux
+</li><li>cd xsshunter/api/
+</li><li>virtualenv env
+</li><li>. env/bin/activate
+</li><li>pip install -r requirements.txt
+</li><li>./apiserver.py
+</li><li>ctrl+b, followed by c
+<br>
+</li><li>cd xsshunter/gui/
+</li><li>virtualenv env
+</li><li>. env/bin/activate
+</li><li>pip install -r requirements.txt
+</li><li>./guiserver.py
+</li><li>ctrl+b, followed by d
+</li></ul>
+To interact with the tmux session again you can use the commands <code>tmux list-sessions</code> and <code>tmux attach -t &lt;session#&gt;</code>.<br>
+<div class="separator" style="clear: both; text-align: center;"><a href="https://2.bp.blogspot.com/--zLlzgsubSk/W1ZGw68AM7I/AAAAAAAAAn8/11_R7ArEy6UN_QJW4fNEFuoMkAtsMBu2gCLcBGAs/s1600/XSS-Hunter-UI.png" imageanchor="1" style="margin-left: 1em; margin-right: 1em;"><img border="0" data-original-height="493" data-original-width="1600" height="197" src="./Building Your Own XSS Hunter in AWS _ SmeegeSec_files/XSS-Hunter-UI.png" width="640"></a></div>
+<br>
+<div class="separator" style="clear: both; text-align: center;"><a href="https://1.bp.blogspot.com/-_CQcL6PPz3I/W1ZPuJDLd5I/AAAAAAAAAoI/277xnujLJZky-pmsNo1YsTPM61Tt5dJ5ACLcBGAs/s1600/XSS-Hunter-Email.png" imageanchor="1" style="margin-left: 1em; margin-right: 1em;"><img border="0" data-original-height="873" data-original-width="1600" height="349" src="./Building Your Own XSS Hunter in AWS _ SmeegeSec_files/XSS-Hunter-Email.png" width="640"></a></div>
+Done! Now we have our own XSS Hunter server. You can create users with their own subdomains (e.g. a.tst.co), correctly receive payload triggers, and send e-mail alerts.
+<h4>Additional Resources</h4>
+<ul>
+<li><a href="https://github.com/mandatoryprogrammer/xsshunter">Original XSS Hunter GitHub</a>
+</li><li><a href="https://thehackerblog.com/xss-hunter-is-now-open-source-heres-how-to-set-it-up/index.html">Original XSS Hunter Server Setup Guide</a>
+</li><li><a href="https://github.com/mystech7/xsshunter">Forked XSS Hunter Repo</a>
+</li></ul>
+<div style="clear: both;"></div>
+</div>
+<div class="pbtsharethisbutt smallPartnbt">
+Share This:&nbsp;&nbsp;
+<a href="http://www.facebook.com/share.php?v=4&amp;src=bm&amp;u=https://www.smeegesec.com/2018/07/building-your-own-xss-hunter-in-aws.html&amp;t=Building%20Your%20Own%20XSS%20Hunter%20in%20AWS" onclick="window.open(this.href,&quot;sharer&quot;,&quot;toolbar=0,status=0,width=626,height=436&quot;); return false;" rel="nofollow" target="_blank" title="Share this on Facebook"><i class="fa fa-facebook-square"></i>&nbsp;Facebook</a><a href="http://twitter.com/home?status=Building%20Your%20Own%20XSS%20Hunter%20in%20AWS%20--%20https://www.smeegesec.com/2018/07/building-your-own-xss-hunter-in-aws.html" rel="nofollow" target="_blank" title="Tweet This!"><i class="fa fa-twitter-square"></i>&nbsp;Twitter</a><a href="https://plus.google.com/share?url=https://www.smeegesec.com/2018/07/building-your-own-xss-hunter-in-aws.html" onclick="javascript:window.open(this.href,   &quot;&quot;, &quot;menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=600,width=600&quot;);return false;" rel="nofollow" target="_blank" title="Share this on Google+"><i class="fa fa-google-plus-square"></i>&nbsp;Google+</a><a href="http://www.stumbleupon.com/submit?url=https://www.smeegesec.com/2018/07/building-your-own-xss-hunter-in-aws.html&amp;title=Building%20Your%20Own%20XSS%20Hunter%20in%20AWS" rel="nofollow" target="_blank" title="Stumble upon something good? Share it on StumbleUpon"><i class="fa fa-stumbleupon-circle"></i>&nbsp;Stumble</a><a href="http://digg.com/submit?phase=2&amp;url=https://www.smeegesec.com/2018/07/building-your-own-xss-hunter-in-aws.html&amp;title=Building%20Your%20Own%20XSS%20Hunter%20in%20AWS" rel="nofollow" target="_blank" title="Digg this!"><i class="fa fa-digg"></i>&nbsp;Digg</a>
+</div>
+<div style="clear: both;"></div>
+<div class="post-iconspbt">
+<span class="post-icons" style="padding-right:10px;">
+</span>
+<div class="post-share-buttons goog-inline-block">
+<a class="goog-inline-block share-button sb-email" href="https://www.blogger.com/share-post.g?blogID=8845853463796109471&amp;postID=4725598423524496743&amp;target=email" target="_blank" title="Email This"><span class="share-button-link-text">Email This</span></a><a class="goog-inline-block share-button sb-blog" href="https://www.blogger.com/share-post.g?blogID=8845853463796109471&amp;postID=4725598423524496743&amp;target=blog" onclick="window.open(this.href, &quot;_blank&quot;, &quot;height=270,width=475&quot;); return false;" target="_blank" title="BlogThis!"><span class="share-button-link-text">BlogThis!</span></a><a class="goog-inline-block share-button sb-twitter" href="https://www.blogger.com/share-post.g?blogID=8845853463796109471&amp;postID=4725598423524496743&amp;target=twitter" target="_blank" title="Share to Twitter"><span class="share-button-link-text">Share to Twitter</span></a><a class="goog-inline-block share-button sb-facebook" href="https://www.blogger.com/share-post.g?blogID=8845853463796109471&amp;postID=4725598423524496743&amp;target=facebook" onclick="window.open(this.href, &quot;_blank&quot;, &quot;height=430,width=640&quot;); return false;" target="_blank" title="Share to Facebook"><span class="share-button-link-text">Share to Facebook</span></a>
+</div>
+<div style="clear: both;"></div>
+</div>
+<div class="post-location post-locationpbt">
+</div>
+<div class="related-postbwrap" id="bpostrelated-post"><h4>Related Posts:</h4><ul class="related-post-style-2"><li><img alt="" class="related-post-item-thumbnail" src="./Building Your Own XSS Hunter in AWS _ SmeegeSec_files/no-img.png" width="80" height="80"><a class="related-post-item-title" title="Detecting and Exploiting the HTTP PUT Method" href="https://www.smeegesec.com/2014/10/detecting-and-exploiting-http-put-method.html">Detecting and Exploiting the HTTP PUT Method</a><span class="related-post-item-summary"><span class="related-post-item-summary-text">
+
+
+
+I recently found a web server which allowed the HTTP PUT Method.  This was detected and proven vulnerable by a Nessus vulnerability scan which act…</span> <a href="https://www.smeegesec.com/2014/10/detecting-and-exploiting-http-put-method.html" class="related-post-item-more">Read More</a></span><span style="display:block;clear:both;"></span></li><li><img alt="" class="related-post-item-thumbnail" src="./Building Your Own XSS Hunter in AWS _ SmeegeSec_files/no-img.png" width="80" height="80"><a class="related-post-item-title" title="SmeegeScrape: Text Scraper and Custom Word List Generator" href="https://www.smeegesec.com/2014/01/smeegescrape-text-scraper-and-custom.html">SmeegeScrape: Text Scraper and Custom Word List Generator</a><span class="related-post-item-summary"><span class="related-post-item-summary-text">
+
+
+
+
+
+Click Here to Download Source Code
+Customize your security testing with SmeegeScrape.py! It's a simple python script to scrape text from various…</span> <a href="https://www.smeegesec.com/2014/01/smeegescrape-text-scraper-and-custom.html" class="related-post-item-more">Read More</a></span><span style="display:block;clear:both;"></span></li><li><img alt="" class="related-post-item-thumbnail" src="./Building Your Own XSS Hunter in AWS _ SmeegeSec_files/ftpserver.png" width="80" height="80"><a class="related-post-item-title" title="Checking read and write access to an FTP server" href="https://www.smeegesec.com/2012/10/checking-read-and-write-access-to-ftp.html">Checking read and write access to an FTP server</a><span class="related-post-item-summary"><span class="related-post-item-summary-text">
+
+
+
+
+
+
+Having an FTP server which others can access is a dangerous thing. Allowing others to have write access is even worse. In most situations, whet…</span> <a href="https://www.smeegesec.com/2012/10/checking-read-and-write-access-to-ftp.html" class="related-post-item-more">Read More</a></span><span style="display:block;clear:both;"></span></li><li><img alt="" class="related-post-item-thumbnail" src="./Building Your Own XSS Hunter in AWS _ SmeegeSec_files/photo.JPG" width="80" height="80"><a class="related-post-item-title" title="Defcon 21: Password Cracking KoreLogic&#39;s Shirt" href="https://www.smeegesec.com/2013/08/defcon-21-password-cracking-korelogics.html">Defcon 21: Password Cracking KoreLogic's Shirt</a><span class="related-post-item-summary"><span class="related-post-item-summary-text">
+
+
+
+For the past couple of years KoreLogic Security has had a wonderful presence at Defcon with their 'Crack Me If You Can' contest where some of the …</span> <a href="https://www.smeegesec.com/2013/08/defcon-21-password-cracking-korelogics.html" class="related-post-item-more">Read More</a></span><span style="display:block;clear:both;"></span></li><li><img alt="" class="related-post-item-thumbnail" src="./Building Your Own XSS Hunter in AWS _ SmeegeSec_files/no-img.png" width="80" height="80"><a class="related-post-item-title" title="Burp Extension: Directory and File Listing Parser - Burp Site Map Importer" href="https://www.smeegesec.com/2013/07/burp-extension-directory-and-file.html">Burp Extension: Directory and File Listing Parser - Burp Site Map Importer</a><span class="related-post-item-summary"><span class="related-post-item-summary-text">
+
+
+
+Click Here to Download Source Code
+Penetration testers, rejoice! While conducting application penetration tests it’s sometimes necessary to reques…</span> <a href="https://www.smeegesec.com/2013/07/burp-extension-directory-and-file.html" class="related-post-item-more">Read More</a></span><span style="display:block;clear:both;"></span></li></ul><span style="display:block;clear:both;"></span></div>
+<div style="clear: both;"></div>
+<script type="text/javascript">
+var labelArray = [];
+var relatedPostConfig = {
+      homePage: "https://www.smeegesec.com/",
+      widgetTitle: "<h4>Related Posts:</h4>",
+      numPosts: 5,
+      summaryLength: 150,
+      titleLength: "auto",
+      thumbnailSize: 80,
+      noImage: "http://1.bp.blogspot.com/-Xakmg4CGXnA/Uw_8uqsGlwI/AAAAAAAALjg/AdRZNmOJpIA/s1600/no-img.png",
+      containerId: "bpostrelated-post",
+      newTabLink: false,
+      moreText: "Read More",
+      widgetStyle: 2,
+      callBack: function() {}
+};
+</script>
+<script type="text/javascript">
+//<![CDATA[
+
+/*! Related Post Widget for Blogger by Taufik Nurrohman => http://gplus.to/tovic */
+var randomRelatedIndex,showRelatedPost;(function(n,m,k){var d={widgetTitle:"<h4>Artikel Terkait:</h4>",widgetStyle:1,homePage:"http://www.dte.web.id",numPosts:7,summaryLength:370,titleLength:"auto",thumbnailSize:72,noImage:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAA3NCSVQICAjb4U/gAAAADElEQVQImWOor68HAAL+AX7vOF2TAAAAAElFTkSuQmCC",containerId:"related-post",newTabLink:false,moreText:"Baca Selengkapnya",callBack:function(){}};for(var f in relatedPostConfig){d[f]=(relatedPostConfig[f]=="undefined")?d[f]:relatedPostConfig[f]}var j=function(a){var b=m.createElement("script");b.type="text/javascript";b.src=a;k.appendChild(b)},o=function(b,a){return Math.floor(Math.random()*(a-b+1))+b},l=function(a){var p=a.length,c,b;if(p===0){return false}while(--p){c=Math.floor(Math.random()*(p+1));b=a[p];a[p]=a[c];a[c]=b}return a},e=(typeof labelArray=="object"&&labelArray.length>0)?"/-/"+l(labelArray)[0]:"",h=function(b){var c=b.feed.openSearch$totalResults.$t-d.numPosts,a=o(1,(c>0?c:1));j(d.homePage.replace(/\/$/,"")+"/feeds/posts/summary"+e+"?alt=json-in-script&orderby=updated&start-index="+a+"&max-results="+d.numPosts+"&callback=showRelatedPost")},g=function(z){var s=document.getElementById(d.containerId),x=l(z.feed.entry),A=d.widgetStyle,c=d.widgetTitle+'<ul class="related-post-style-'+A+'">',b=d.newTabLink?' target="_blank"':"",y='<span style="display:block;clear:both;"></span>',v,t,w,r,u;if(!s){return}for(var q=0;q<d.numPosts;q++){if(q==x.length){break}t=x[q].title.$t;w=(d.titleLength!=="auto"&&d.titleLength<t.length)?t.substring(0,d.titleLength)+"&hellip;":t;r=("media$thumbnail" in x[q]&&d.thumbnailSize!==false)?x[q].media$thumbnail.url.replace(/\/s[0-9]+(\-c)?/,"/s"+d.thumbnailSize+"-c"):d.noImage;u=("summary" in x[q]&&d.summaryLength>0)?x[q].summary.$t.replace(/<br ?\/?>/g," ").replace(/<.*?>/g,"").replace(/[<>]/g,"").substring(0,d.summaryLength)+"&hellip;":"";for(var p=0,a=x[q].link.length;p<a;p++){v=(x[q].link[p].rel=="alternate")?x[q].link[p].href:"#"}if(A==2){c+='<li><img alt="" class="related-post-item-thumbnail" src="'+r+'" width="'+d.thumbnailSize+'" height="'+d.thumbnailSize+'"><a class="related-post-item-title" title="'+t+'" href="'+v+'"'+b+">"+w+'</a><span class="related-post-item-summary"><span class="related-post-item-summary-text">'+u+'</span> <a href="'+v+'" class="related-post-item-more"'+b+">"+d.moreText+"</a></span>"+y+"</li>"}else{if(A==3||A==4){c+='<li class="related-post-item" tabindex="0"><a class="related-post-item-title" href="'+v+'"'+b+'><img alt="" class="related-post-item-thumbnail" src="'+r+'" width="'+d.thumbnailSize+'" height="'+d.thumbnailSize+'"></a><div class="related-post-item-tooltip"><a class="related-post-item-title" title="'+t+'" href="'+v+'"'+b+">"+w+"</a></div>"+y+"</li>"}else{if(A==5){c+='<li class="related-post-item" tabindex="0"><a class="related-post-item-wrapper" href="'+v+'" title="'+t+'"'+b+'><img alt="" class="related-post-item-thumbnail" src="'+r+'" width="'+d.thumbnailSize+'" height="'+d.thumbnailSize+'"><span class="related-post-item-tooltip">'+w+"</span></a>"+y+"</li>"}else{if(A==6){c+='<li><a class="related-post-item-title" title="'+t+'" href="'+v+'"'+b+">"+w+'</a><div class="related-post-item-tooltip"><img alt="" class="related-post-item-thumbnail" src="'+r+'" width="'+d.thumbnailSize+'" height="'+d.thumbnailSize+'"><span class="related-post-item-summary"><span class="related-post-item-summary-text">'+u+"</span></span>"+y+"</div></li>"}else{c+='<li><a title="'+t+'" href="'+v+'"'+b+">"+w+"</a></li>"}}}}}s.innerHTML=c+="</ul>"+y;d.callBack()};randomRelatedIndex=h;showRelatedPost=g;j(d.homePage.replace(/\/$/,"")+"/feeds/posts/summary"+e+"?alt=json-in-script&orderby=updated&max-results=0&callback=randomRelatedIndex")})(window,document,document.getElementsByTagName("head")[0]);
+
+//]]>
+</script>
+</article>
+<div class="betweenPostnbt"></div>
+<div style="clear: both;"></div>
+<div class="blog-pager" id="blog-pager">
+<span id="blog-pager-newer-link">
+<a class="blog-pager-newer-link" href="https://www.smeegesec.com/2019/03/auditing-github-repo-wikis-for-fun-and.html" id="Blog1_blog-pager-newer-link" title="Newer Post">Newer Post</a>
+</span>
+<span id="blog-pager-older-link">
+<a class="blog-pager-older-link" href="https://www.smeegesec.com/2017/10/detecting-ssrf-using-aws-services.html" id="Blog1_blog-pager-older-link" title="Older Post">Older Post</a>
+</span>
+<a class="home-link" href="https://www.smeegesec.com/">Home</a>
+</div>
+<div class="clear"></div>
+<div class="comments" id="comments">
+<a name="comments"></a>
+<h4>
+0
+comments:
+        
+</h4>
+<div id="Blog1_comments-block-wrapper">
+<dl class="avatar-comment-indent" id="comments-block">
+</dl>
+</div>
+<p class="comment-footer">
+</p><div class="comment-form">
+<a name="comment-form"></a>
+<h4 id="comment-post-message">Post a Comment</h4>
+<p>
+</p>
+<a href="https://www.blogger.com/comment-iframe.g?blogID=8845853463796109471&amp;postID=4725598423524496743&amp;blogspotRpcToken=9609003" id="comment-editor-src"></a>
+<iframe allowtransparency="true" class="blogger-iframe-colorize blogger-comment-from-post" frameborder="0" height="192px" id="comment-editor" name="comment-editor" src="./Building Your Own XSS Hunter in AWS _ SmeegeSec_files/comment-iframe.html" width="100%" data-resized="true"></iframe>
+<!--Can't find substitution for tag [post.friendConnectJs]-->
+<script src="./Building Your Own XSS Hunter in AWS _ SmeegeSec_files/114029842-comment_from_post_iframe.js.下载" type="text/javascript"></script>
+<script type="text/javascript">
+      BLOG_CMT_createIframe('https://www.blogger.com/rpc_relay.html', '0');
+    </script>
+</div>
+<p></p>
+<div id="backlinks-container">
+<div id="Blog1_backlinks-container">
+</div>
+</div>
+</div>
+</div>
+
+        </div></div>
+      
+<!--Can't find substitution for tag [adEnd]-->
+</div>
+<div style="clear: both;"></div>
+<div class="post-feeds">
+<div class="feed-links">
+Subscribe to:
+<a class="feed-link" href="https://www.smeegesec.com/feeds/4725598423524496743/comments/default" target="_blank" type="application/atom+xml">Post Comments (Atom)</a>
+</div>
+</div>
+</div></div>
+</div><!-- #main -->
+</div><!-- #primary -->
+</div><!-- #content -->
+<footer class="site-footernbt" id="colophonnbt" role="contentinfo">
+<div class="site-infonbt smallPartnbt">
+<!-- Do not edit or remove credits without our permission: newbloggerthemes.com -->
+Copyright © <script type="text/javascript">var creditsyear = new Date();document.write(creditsyear.getFullYear());</script>2020
+<a href="https://www.smeegesec.com/">SmeegeSec</a> | Powered by <a href="https://www.blogger.com/">Blogger</a><br>Design by <a href="http://crestaproject.com/" target="_blank">CrestaProject</a> | Blogger Theme by <a href="http://newbloggerthemes.com/" target="_blank" title="NewBloggerThemes.com">NewBloggerThemes.com</a> | Distributed By <a href="http://gooyaabitemplates.com/" rel="dofollow" target="_blank">Gooyaabi Templates</a>
+</div><!-- .site-info -->
+<div class="site-socialnbt smallPartnbt">
+<a href="https://www.facebook.com/newbthemes" rel="nofollow" target="_blank" title="Facebook"><i class="fa spaceLeftRight fa-facebook"></i></a>
+<a href="https://twitter.com/newbthemes" rel="nofollow" target="_blank" title="Twitter"><i class="fa spaceLeftRight fa-twitter"></i></a>
+<a href="https://plus.google.com/114594158726319551901/posts" target="_blank" title="Google Plus"><i class="fa spaceLeftRight fa-google-plus"></i></a>
+<a href="https://www.smeegesec.com/2018/07/building-your-own-xss-hunter-in-aws.html#" rel="nofollow" target="_blank" title="Linkedin"><i class="fa spaceLeftRight fa-linkedin"></i></a>
+<a href="https://www.smeegesec.com/2018/07/building-your-own-xss-hunter-in-aws.html#" rel="nofollow" target="_blank" title="Instagram"><i class="fa spaceLeftRight fa-instagram"></i></a>
+<a href="https://www.smeegesec.com/2018/07/building-your-own-xss-hunter-in-aws.html#" rel="nofollow" target="_blank" title="YouTube"><i class="fa spaceLeftRight fa-youtube"></i></a>
+<a href="https://www.smeegesec.com/2018/07/building-your-own-xss-hunter-in-aws.html#" rel="nofollow" target="_blank" title="Pinterest"><i class="fa spaceLeftRight fa-pinterest"></i></a>
+<a href="https://www.smeegesec.com/2018/07/building-your-own-xss-hunter-in-aws.html#" rel="nofollow" target="_blank" title="Tumblr"><i class="fa spaceLeftRight fa-tumblr"></i></a>
+<a href="https://www.smeegesec.com/feeds/posts/default" title="RSS"><i class="fa spaceLeftRight fa-rss"></i></a>
+</div><!-- .site-socialnbt -->
+</footer><!-- #colophon -->
+</div><!-- #page -->
+<div class="widget-areanbt smallPartnbt loaded" id="secondarynbt" role="complementary">
+<div class="sidebarrightnbt section" id="sidebarrightnbt"><div class="widget PopularPosts" data-version="1" id="PopularPosts1">
+<h2>Popular Posts</h2>
+<div class="widget-content popular-posts">
+<ul>
+<li>
+<div class="item-content">
+<div class="item-title"><a href="https://www.smeegesec.com/2012/06/collection-of-cross-site-scripting-xss.html">Collection of Cross-Site Scripting (XSS) Payloads</a></div>
+<div class="item-snippet">    Here is a compiled list of Cross-Site Scripting (XSS) payloads, 298 in total, from various sites.  These payloads are great for fuzzing ...</div>
+</div>
+<div style="clear: both;"></div>
+</li>
+<li>
+<div class="item-content">
+<div class="item-thumbnail">
+<a href="https://www.smeegesec.com/2013/11/hashtag-password-hash-identification.html" target="_blank">
+<img alt="" border="0" height="72" src="./Building Your Own XSS Hunter in AWS _ SmeegeSec_files/image003.png" width="72">
+</a>
+</div>
+<div class="item-title"><a href="https://www.smeegesec.com/2013/11/hashtag-password-hash-identification.html">HashTag: Password Hash Identification</a></div>
+<div class="item-snippet">       Interested in password cracking or cryptography? Check this out. HashTag.py  is a tool written in python which parses and identifies ...</div>
+</div>
+<div style="clear: both;"></div>
+</li>
+<li>
+<div class="item-content">
+<div class="item-thumbnail">
+<a href="https://www.smeegesec.com/2014/10/detecting-and-exploiting-http-put-method.html" target="_blank">
+<img alt="" border="0" height="72" src="./Building Your Own XSS Hunter in AWS _ SmeegeSec_files/nessus_http_methods_allowed.png" width="72">
+</a>
+</div>
+<div class="item-title"><a href="https://www.smeegesec.com/2014/10/detecting-and-exploiting-http-put-method.html">Detecting and Exploiting the HTTP PUT Method</a></div>
+<div class="item-snippet">    I recently found a web server which allowed the HTTP PUT Method.  This was detected and proven vulnerable by a Nessus vulnerability scan...</div>
+</div>
+<div style="clear: both;"></div>
+</li>
+<li>
+<div class="item-content">
+<div class="item-thumbnail">
+<a href="https://www.smeegesec.com/2014/01/smeegescrape-text-scraper-and-custom.html" target="_blank">
+<img alt="" border="0" height="72" src="./Building Your Own XSS Hunter in AWS _ SmeegeSec_files/image001.png" width="72">
+</a>
+</div>
+<div class="item-title"><a href="https://www.smeegesec.com/2014/01/smeegescrape-text-scraper-and-custom.html">SmeegeScrape: Text Scraper and Custom Word List Generator</a></div>
+<div class="item-snippet">      Click Here to Download Source Code  Customize your security testing with SmeegeScrape.py! It's a simple python script to scrape te...</div>
+</div>
+<div style="clear: both;"></div>
+</li>
+</ul>
+<div class="clear"></div>
+<span class="widget-item-control">
+<span class="item-control blog-admin">
+<a class="quickedit" href="https://www.blogger.com/rearrange?blogID=8845853463796109471&amp;widgetType=PopularPosts&amp;widgetId=PopularPosts1&amp;action=editWidget&amp;sectionId=sidebarrightnbt" onclick="return _WidgetManager._PopupConfig(document.getElementById(&quot;PopularPosts1&quot;));" rel="nofollow" target="configPopularPosts1" title="Edit">
+<img alt="" height="18" src="./Building Your Own XSS Hunter in AWS _ SmeegeSec_files/icon18_wrench_allbkg.png" width="18">
+</a>
+</span>
+</span>
+<div class="clear"></div>
+</div>
+</div><div class="widget HTML" data-version="1" id="HTML1">
+<h2 class="title">Recent Posts</h2>
+<div class="widget-content">
+</div>
+<div class="clear"></div>
+<span class="widget-item-control">
+<span class="item-control blog-admin">
+<a class="quickedit" href="https://www.blogger.com/rearrange?blogID=8845853463796109471&amp;widgetType=HTML&amp;widgetId=HTML1&amp;action=editWidget&amp;sectionId=sidebarrightnbt" onclick="return _WidgetManager._PopupConfig(document.getElementById(&quot;HTML1&quot;));" rel="nofollow" target="configHTML1" title="Edit">
+<img alt="" height="18" src="./Building Your Own XSS Hunter in AWS _ SmeegeSec_files/icon18_wrench_allbkg.png" width="18">
+</a>
+</span>
+</span>
+<div class="clear"></div>
+</div><div class="widget Label" data-version="1" id="Label1">
+<h2>Categories</h2>
+<div class="widget-content list-label-widget-content">
+<ul>
+<li>
+<a dir="ltr" href="https://www.smeegesec.com/search/label/Authentication%20Attack">Authentication Attack</a>
+<span dir="ltr">(2)</span>
+</li>
+<li>
+<a dir="ltr" href="https://www.smeegesec.com/search/label/BackTrack">BackTrack</a>
+<span dir="ltr">(1)</span>
+</li>
+<li>
+<a dir="ltr" href="https://www.smeegesec.com/search/label/Burp">Burp</a>
+<span dir="ltr">(8)</span>
+</li>
+<li>
+<a dir="ltr" href="https://www.smeegesec.com/search/label/Burp%20Extension">Burp Extension</a>
+<span dir="ltr">(3)</span>
+</li>
+<li>
+<a dir="ltr" href="https://www.smeegesec.com/search/label/Burp%20Plugin">Burp Plugin</a>
+<span dir="ltr">(1)</span>
+</li>
+<li>
+<a dir="ltr" href="https://www.smeegesec.com/search/label/CSRF">CSRF</a>
+<span dir="ltr">(1)</span>
+</li>
+<li>
+<a dir="ltr" href="https://www.smeegesec.com/search/label/Defcon">Defcon</a>
+<span dir="ltr">(1)</span>
+</li>
+<li>
+<a dir="ltr" href="https://www.smeegesec.com/search/label/FTP">FTP</a>
+<span dir="ltr">(2)</span>
+</li>
+<li>
+<a dir="ltr" href="https://www.smeegesec.com/search/label/HashTag">HashTag</a>
+<span dir="ltr">(1)</span>
+</li>
+<li>
+<a dir="ltr" href="https://www.smeegesec.com/search/label/HTTP%20Headers">HTTP Headers</a>
+<span dir="ltr">(2)</span>
+</li>
+<li>
+<a dir="ltr" href="https://www.smeegesec.com/search/label/Hydra">Hydra</a>
+<span dir="ltr">(1)</span>
+</li>
+<li>
+<a dir="ltr" href="https://www.smeegesec.com/search/label/Injection">Injection</a>
+<span dir="ltr">(1)</span>
+</li>
+<li>
+<a dir="ltr" href="https://www.smeegesec.com/search/label/Kismet">Kismet</a>
+<span dir="ltr">(1)</span>
+</li>
+<li>
+<a dir="ltr" href="https://www.smeegesec.com/search/label/Metasploit">Metasploit</a>
+<span dir="ltr">(2)</span>
+</li>
+<li>
+<a dir="ltr" href="https://www.smeegesec.com/search/label/Password%20Cracking">Password Cracking</a>
+<span dir="ltr">(3)</span>
+</li>
+<li>
+<a dir="ltr" href="https://www.smeegesec.com/search/label/Payloads">Payloads</a>
+<span dir="ltr">(2)</span>
+</li>
+<li>
+<a dir="ltr" href="https://www.smeegesec.com/search/label/Physical%20Security">Physical Security</a>
+<span dir="ltr">(1)</span>
+</li>
+<li>
+<a dir="ltr" href="https://www.smeegesec.com/search/label/rsync">rsync</a>
+<span dir="ltr">(1)</span>
+</li>
+<li>
+<a dir="ltr" href="https://www.smeegesec.com/search/label/SmeegeScrape">SmeegeScrape</a>
+<span dir="ltr">(1)</span>
+</li>
+<li>
+<a dir="ltr" href="https://www.smeegesec.com/search/label/SQLMap">SQLMap</a>
+<span dir="ltr">(1)</span>
+</li>
+<li>
+<a dir="ltr" href="https://www.smeegesec.com/search/label/Tools">Tools</a>
+<span dir="ltr">(12)</span>
+</li>
+<li>
+<a dir="ltr" href="https://www.smeegesec.com/search/label/Web%20Services">Web Services</a>
+<span dir="ltr">(2)</span>
+</li>
+<li>
+<a dir="ltr" href="https://www.smeegesec.com/search/label/WebScarab">WebScarab</a>
+<span dir="ltr">(1)</span>
+</li>
+<li>
+<a dir="ltr" href="https://www.smeegesec.com/search/label/XSS">XSS</a>
+<span dir="ltr">(1)</span>
+</li>
+</ul>
+<div class="clear"></div>
+<span class="widget-item-control">
+<span class="item-control blog-admin">
+<a class="quickedit" href="https://www.blogger.com/rearrange?blogID=8845853463796109471&amp;widgetType=Label&amp;widgetId=Label1&amp;action=editWidget&amp;sectionId=sidebarrightnbt" onclick="return _WidgetManager._PopupConfig(document.getElementById(&quot;Label1&quot;));" rel="nofollow" target="configLabel1" title="Edit">
+<img alt="" height="18" src="./Building Your Own XSS Hunter in AWS _ SmeegeSec_files/icon18_wrench_allbkg.png" width="18">
+</a>
+</span>
+</span>
+<div class="clear"></div>
+</div>
+</div><div class="widget BlogArchive" data-version="1" id="BlogArchive1">
+<h2>Blog Archive</h2>
+<div class="widget-content">
+<div id="ArchiveList">
+<div id="BlogArchive1_ArchiveList">
+<ul class="hierarchy">
+<li class="archivedate collapsed">
+<a class="toggle" href="javascript:void(0)">
+<span class="zippy">
+
+          ►&nbsp;
+        
+</span>
+</a>
+<a class="post-count-link" href="https://www.smeegesec.com/2019/">2019</a>
+<span class="post-count" dir="ltr">(1)</span>
+<ul class="hierarchy">
+<li class="archivedate collapsed">
+<a class="toggle" href="javascript:void(0)">
+<span class="zippy">
+
+          ►&nbsp;
+        
+</span>
+</a>
+<a class="post-count-link" href="https://www.smeegesec.com/2019/03/">March</a>
+<span class="post-count" dir="ltr">(1)</span>
+</li>
+</ul>
+</li>
+</ul>
+<ul class="hierarchy">
+<li class="archivedate expanded">
+<a class="toggle" href="javascript:void(0)">
+<span class="zippy toggle-open">▼&nbsp;</span>
+</a>
+<a class="post-count-link" href="https://www.smeegesec.com/2018/">2018</a>
+<span class="post-count" dir="ltr">(1)</span>
+<ul class="hierarchy">
+<li class="archivedate expanded">
+<a class="toggle" href="javascript:void(0)">
+<span class="zippy toggle-open">▼&nbsp;</span>
+</a>
+<a class="post-count-link" href="https://www.smeegesec.com/2018/07/">July</a>
+<span class="post-count" dir="ltr">(1)</span>
+<ul class="posts">
+<li><a href="https://www.smeegesec.com/2018/07/building-your-own-xss-hunter-in-aws.html">Building Your Own XSS Hunter in AWS</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul class="hierarchy">
+<li class="archivedate collapsed">
+<a class="toggle" href="javascript:void(0)">
+<span class="zippy">
+
+          ►&nbsp;
+        
+</span>
+</a>
+<a class="post-count-link" href="https://www.smeegesec.com/2017/">2017</a>
+<span class="post-count" dir="ltr">(3)</span>
+<ul class="hierarchy">
+<li class="archivedate collapsed">
+<a class="toggle" href="javascript:void(0)">
+<span class="zippy">
+
+          ►&nbsp;
+        
+</span>
+</a>
+<a class="post-count-link" href="https://www.smeegesec.com/2017/10/">October</a>
+<span class="post-count" dir="ltr">(1)</span>
+</li>
+</ul>
+<ul class="hierarchy">
+<li class="archivedate collapsed">
+<a class="toggle" href="javascript:void(0)">
+<span class="zippy">
+
+          ►&nbsp;
+        
+</span>
+</a>
+<a class="post-count-link" href="https://www.smeegesec.com/2017/03/">March</a>
+<span class="post-count" dir="ltr">(2)</span>
+</li>
+</ul>
+</li>
+</ul>
+<ul class="hierarchy">
+<li class="archivedate collapsed">
+<a class="toggle" href="javascript:void(0)">
+<span class="zippy">
+
+          ►&nbsp;
+        
+</span>
+</a>
+<a class="post-count-link" href="https://www.smeegesec.com/2016/">2016</a>
+<span class="post-count" dir="ltr">(2)</span>
+<ul class="hierarchy">
+<li class="archivedate collapsed">
+<a class="toggle" href="javascript:void(0)">
+<span class="zippy">
+
+          ►&nbsp;
+        
+</span>
+</a>
+<a class="post-count-link" href="https://www.smeegesec.com/2016/12/">December</a>
+<span class="post-count" dir="ltr">(1)</span>
+</li>
+</ul>
+<ul class="hierarchy">
+<li class="archivedate collapsed">
+<a class="toggle" href="javascript:void(0)">
+<span class="zippy">
+
+          ►&nbsp;
+        
+</span>
+</a>
+<a class="post-count-link" href="https://www.smeegesec.com/2016/02/">February</a>
+<span class="post-count" dir="ltr">(1)</span>
+</li>
+</ul>
+</li>
+</ul>
+<ul class="hierarchy">
+<li class="archivedate collapsed">
+<a class="toggle" href="javascript:void(0)">
+<span class="zippy">
+
+          ►&nbsp;
+        
+</span>
+</a>
+<a class="post-count-link" href="https://www.smeegesec.com/2015/">2015</a>
+<span class="post-count" dir="ltr">(2)</span>
+<ul class="hierarchy">
+<li class="archivedate collapsed">
+<a class="toggle" href="javascript:void(0)">
+<span class="zippy">
+
+          ►&nbsp;
+        
+</span>
+</a>
+<a class="post-count-link" href="https://www.smeegesec.com/2015/05/">May</a>
+<span class="post-count" dir="ltr">(1)</span>
+</li>
+</ul>
+<ul class="hierarchy">
+<li class="archivedate collapsed">
+<a class="toggle" href="javascript:void(0)">
+<span class="zippy">
+
+          ►&nbsp;
+        
+</span>
+</a>
+<a class="post-count-link" href="https://www.smeegesec.com/2015/02/">February</a>
+<span class="post-count" dir="ltr">(1)</span>
+</li>
+</ul>
+</li>
+</ul>
+<ul class="hierarchy">
+<li class="archivedate collapsed">
+<a class="toggle" href="javascript:void(0)">
+<span class="zippy">
+
+          ►&nbsp;
+        
+</span>
+</a>
+<a class="post-count-link" href="https://www.smeegesec.com/2014/">2014</a>
+<span class="post-count" dir="ltr">(2)</span>
+<ul class="hierarchy">
+<li class="archivedate collapsed">
+<a class="toggle" href="javascript:void(0)">
+<span class="zippy">
+
+          ►&nbsp;
+        
+</span>
+</a>
+<a class="post-count-link" href="https://www.smeegesec.com/2014/10/">October</a>
+<span class="post-count" dir="ltr">(1)</span>
+</li>
+</ul>
+<ul class="hierarchy">
+<li class="archivedate collapsed">
+<a class="toggle" href="javascript:void(0)">
+<span class="zippy">
+
+          ►&nbsp;
+        
+</span>
+</a>
+<a class="post-count-link" href="https://www.smeegesec.com/2014/06/">June</a>
+<span class="post-count" dir="ltr">(1)</span>
+</li>
+</ul>
+</li>
+</ul>
+<ul class="hierarchy">
+<li class="archivedate collapsed">
+<a class="toggle" href="javascript:void(0)">
+<span class="zippy">
+
+          ►&nbsp;
+        
+</span>
+</a>
+<a class="post-count-link" href="https://www.smeegesec.com/2013/">2013</a>
+<span class="post-count" dir="ltr">(6)</span>
+<ul class="hierarchy">
+<li class="archivedate collapsed">
+<a class="toggle" href="javascript:void(0)">
+<span class="zippy">
+
+          ►&nbsp;
+        
+</span>
+</a>
+<a class="post-count-link" href="https://www.smeegesec.com/2013/11/">November</a>
+<span class="post-count" dir="ltr">(1)</span>
+</li>
+</ul>
+<ul class="hierarchy">
+<li class="archivedate collapsed">
+<a class="toggle" href="javascript:void(0)">
+<span class="zippy">
+
+          ►&nbsp;
+        
+</span>
+</a>
+<a class="post-count-link" href="https://www.smeegesec.com/2013/08/">August</a>
+<span class="post-count" dir="ltr">(1)</span>
+</li>
+</ul>
+<ul class="hierarchy">
+<li class="archivedate collapsed">
+<a class="toggle" href="javascript:void(0)">
+<span class="zippy">
+
+          ►&nbsp;
+        
+</span>
+</a>
+<a class="post-count-link" href="https://www.smeegesec.com/2013/07/">July</a>
+<span class="post-count" dir="ltr">(1)</span>
+</li>
+</ul>
+<ul class="hierarchy">
+<li class="archivedate collapsed">
+<a class="toggle" href="javascript:void(0)">
+<span class="zippy">
+
+          ►&nbsp;
+        
+</span>
+</a>
+<a class="post-count-link" href="https://www.smeegesec.com/2013/05/">May</a>
+<span class="post-count" dir="ltr">(1)</span>
+</li>
+</ul>
+<ul class="hierarchy">
+<li class="archivedate collapsed">
+<a class="toggle" href="javascript:void(0)">
+<span class="zippy">
+
+          ►&nbsp;
+        
+</span>
+</a>
+<a class="post-count-link" href="https://www.smeegesec.com/2013/04/">April</a>
+<span class="post-count" dir="ltr">(1)</span>
+</li>
+</ul>
+<ul class="hierarchy">
+<li class="archivedate collapsed">
+<a class="toggle" href="javascript:void(0)">
+<span class="zippy">
+
+          ►&nbsp;
+        
+</span>
+</a>
+<a class="post-count-link" href="https://www.smeegesec.com/2013/02/">February</a>
+<span class="post-count" dir="ltr">(1)</span>
+</li>
+</ul>
+</li>
+</ul>
+<ul class="hierarchy">
+<li class="archivedate collapsed">
+<a class="toggle" href="javascript:void(0)">
+<span class="zippy">
+
+          ►&nbsp;
+        
+</span>
+</a>
+<a class="post-count-link" href="https://www.smeegesec.com/2012/">2012</a>
+<span class="post-count" dir="ltr">(6)</span>
+<ul class="hierarchy">
+<li class="archivedate collapsed">
+<a class="toggle" href="javascript:void(0)">
+<span class="zippy">
+
+          ►&nbsp;
+        
+</span>
+</a>
+<a class="post-count-link" href="https://www.smeegesec.com/2012/10/">October</a>
+<span class="post-count" dir="ltr">(2)</span>
+</li>
+</ul>
+<ul class="hierarchy">
+<li class="archivedate collapsed">
+<a class="toggle" href="javascript:void(0)">
+<span class="zippy">
+
+          ►&nbsp;
+        
+</span>
+</a>
+<a class="post-count-link" href="https://www.smeegesec.com/2012/06/">June</a>
+<span class="post-count" dir="ltr">(2)</span>
+</li>
+</ul>
+<ul class="hierarchy">
+<li class="archivedate collapsed">
+<a class="toggle" href="javascript:void(0)">
+<span class="zippy">
+
+          ►&nbsp;
+        
+</span>
+</a>
+<a class="post-count-link" href="https://www.smeegesec.com/2012/02/">February</a>
+<span class="post-count" dir="ltr">(2)</span>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="clear"></div>
+<span class="widget-item-control">
+<span class="item-control blog-admin">
+<a class="quickedit" href="https://www.blogger.com/rearrange?blogID=8845853463796109471&amp;widgetType=BlogArchive&amp;widgetId=BlogArchive1&amp;action=editWidget&amp;sectionId=sidebarrightnbt" onclick="return _WidgetManager._PopupConfig(document.getElementById(&quot;BlogArchive1&quot;));" rel="nofollow" target="configBlogArchive1" title="Edit">
+<img alt="" height="18" src="./Building Your Own XSS Hunter in AWS _ SmeegeSec_files/icon18_wrench_allbkg.png" width="18">
+</a>
+</span>
+</span>
+<div class="clear"></div>
+</div>
+</div><div class="widget PageList" data-version="1" id="PageList1">
+<h2>Pages</h2>
+<div class="widget-content">
+<ul>
+<li><a href="https://www.smeegesec.com/">Home</a></li>
+<li><a href="https://www.smeegesec.com/p/about.html">About</a></li>
+<li><a href="https://www.smeegesec.com/p/resources.html">Resources</a></li>
+<li><a href="https://www.smeegesec.com/p/contact.html">Contact</a></li>
+</ul>
+<div class="clear"></div>
+<span class="widget-item-control">
+<span class="item-control blog-admin">
+<a class="quickedit" href="https://www.blogger.com/rearrange?blogID=8845853463796109471&amp;widgetType=PageList&amp;widgetId=PageList1&amp;action=editWidget&amp;sectionId=sidebarrightnbt" onclick="return _WidgetManager._PopupConfig(document.getElementById(&quot;PageList1&quot;));" rel="nofollow" target="configPageList1" title="Edit">
+<img alt="" height="18" src="./Building Your Own XSS Hunter in AWS _ SmeegeSec_files/icon18_wrench_allbkg.png" width="18">
+</a>
+</span>
+</span>
+<div class="clear"></div>
+</div>
+</div><div class="widget Attribution" data-version="1" id="Attribution1">
+<div class="widget-content" style="text-align: center;">
+Powered by <a href="https://www.blogger.com/" target="_blank">Blogger</a>.
+</div>
+<div class="clear"></div>
+<span class="widget-item-control">
+<span class="item-control blog-admin">
+<a class="quickedit" href="https://www.blogger.com/rearrange?blogID=8845853463796109471&amp;widgetType=Attribution&amp;widgetId=Attribution1&amp;action=editWidget&amp;sectionId=sidebarrightnbt" onclick="return _WidgetManager._PopupConfig(document.getElementById(&quot;Attribution1&quot;));" rel="nofollow" target="configAttribution1" title="Edit">
+<img alt="" height="18" src="./Building Your Own XSS Hunter in AWS _ SmeegeSec_files/icon18_wrench_allbkg.png" width="18">
+</a>
+</span>
+</span>
+<div class="clear"></div>
+</div><div class="widget Label" data-version="1" id="Label2">
+<h2>Labels</h2>
+<div class="widget-content cloud-label-widget-content">
+<span class="label-size label-size-2">
+<a dir="ltr" href="https://www.smeegesec.com/search/label/Authentication%20Attack">Authentication Attack</a>
+<span class="label-count" dir="ltr">(2)</span>
+</span>
+<span class="label-size label-size-1">
+<a dir="ltr" href="https://www.smeegesec.com/search/label/BackTrack">BackTrack</a>
+<span class="label-count" dir="ltr">(1)</span>
+</span>
+<span class="label-size label-size-4">
+<a dir="ltr" href="https://www.smeegesec.com/search/label/Burp">Burp</a>
+<span class="label-count" dir="ltr">(8)</span>
+</span>
+<span class="label-size label-size-3">
+<a dir="ltr" href="https://www.smeegesec.com/search/label/Burp%20Extension">Burp Extension</a>
+<span class="label-count" dir="ltr">(3)</span>
+</span>
+<span class="label-size label-size-1">
+<a dir="ltr" href="https://www.smeegesec.com/search/label/Burp%20Plugin">Burp Plugin</a>
+<span class="label-count" dir="ltr">(1)</span>
+</span>
+<span class="label-size label-size-1">
+<a dir="ltr" href="https://www.smeegesec.com/search/label/CSRF">CSRF</a>
+<span class="label-count" dir="ltr">(1)</span>
+</span>
+<span class="label-size label-size-1">
+<a dir="ltr" href="https://www.smeegesec.com/search/label/Defcon">Defcon</a>
+<span class="label-count" dir="ltr">(1)</span>
+</span>
+<span class="label-size label-size-2">
+<a dir="ltr" href="https://www.smeegesec.com/search/label/FTP">FTP</a>
+<span class="label-count" dir="ltr">(2)</span>
+</span>
+<span class="label-size label-size-1">
+<a dir="ltr" href="https://www.smeegesec.com/search/label/HashTag">HashTag</a>
+<span class="label-count" dir="ltr">(1)</span>
+</span>
+<span class="label-size label-size-2">
+<a dir="ltr" href="https://www.smeegesec.com/search/label/HTTP%20Headers">HTTP Headers</a>
+<span class="label-count" dir="ltr">(2)</span>
+</span>
+<span class="label-size label-size-1">
+<a dir="ltr" href="https://www.smeegesec.com/search/label/Hydra">Hydra</a>
+<span class="label-count" dir="ltr">(1)</span>
+</span>
+<span class="label-size label-size-1">
+<a dir="ltr" href="https://www.smeegesec.com/search/label/Injection">Injection</a>
+<span class="label-count" dir="ltr">(1)</span>
+</span>
+<span class="label-size label-size-1">
+<a dir="ltr" href="https://www.smeegesec.com/search/label/Kismet">Kismet</a>
+<span class="label-count" dir="ltr">(1)</span>
+</span>
+<span class="label-size label-size-2">
+<a dir="ltr" href="https://www.smeegesec.com/search/label/Metasploit">Metasploit</a>
+<span class="label-count" dir="ltr">(2)</span>
+</span>
+<span class="label-size label-size-3">
+<a dir="ltr" href="https://www.smeegesec.com/search/label/Password%20Cracking">Password Cracking</a>
+<span class="label-count" dir="ltr">(3)</span>
+</span>
+<span class="label-size label-size-2">
+<a dir="ltr" href="https://www.smeegesec.com/search/label/Payloads">Payloads</a>
+<span class="label-count" dir="ltr">(2)</span>
+</span>
+<span class="label-size label-size-1">
+<a dir="ltr" href="https://www.smeegesec.com/search/label/Physical%20Security">Physical Security</a>
+<span class="label-count" dir="ltr">(1)</span>
+</span>
+<span class="label-size label-size-1">
+<a dir="ltr" href="https://www.smeegesec.com/search/label/rsync">rsync</a>
+<span class="label-count" dir="ltr">(1)</span>
+</span>
+<span class="label-size label-size-1">
+<a dir="ltr" href="https://www.smeegesec.com/search/label/SmeegeScrape">SmeegeScrape</a>
+<span class="label-count" dir="ltr">(1)</span>
+</span>
+<span class="label-size label-size-1">
+<a dir="ltr" href="https://www.smeegesec.com/search/label/SQLMap">SQLMap</a>
+<span class="label-count" dir="ltr">(1)</span>
+</span>
+<span class="label-size label-size-5">
+<a dir="ltr" href="https://www.smeegesec.com/search/label/Tools">Tools</a>
+<span class="label-count" dir="ltr">(12)</span>
+</span>
+<span class="label-size label-size-2">
+<a dir="ltr" href="https://www.smeegesec.com/search/label/Web%20Services">Web Services</a>
+<span class="label-count" dir="ltr">(2)</span>
+</span>
+<span class="label-size label-size-1">
+<a dir="ltr" href="https://www.smeegesec.com/search/label/WebScarab">WebScarab</a>
+<span class="label-count" dir="ltr">(1)</span>
+</span>
+<span class="label-size label-size-1">
+<a dir="ltr" href="https://www.smeegesec.com/search/label/XSS">XSS</a>
+<span class="label-count" dir="ltr">(1)</span>
+</span>
+<div class="clear"></div>
+<span class="widget-item-control">
+<span class="item-control blog-admin">
+<a class="quickedit" href="https://www.blogger.com/rearrange?blogID=8845853463796109471&amp;widgetType=Label&amp;widgetId=Label2&amp;action=editWidget&amp;sectionId=sidebarrightnbt" onclick="return _WidgetManager._PopupConfig(document.getElementById(&quot;Label2&quot;));" rel="nofollow" target="configLabel2" title="Edit">
+<img alt="" height="18" src="./Building Your Own XSS Hunter in AWS _ SmeegeSec_files/icon18_wrench_allbkg.png" width="18">
+</a>
+</span>
+</span>
+<div class="clear"></div>
+</div>
+</div>
+<div class="widget Navbar" data-version="1" id="Navbar1"><script type="text/javascript">
+    function setAttributeOnload(object, attribute, val) {
+      if(window.addEventListener) {
+        window.addEventListener('load',
+          function(){ object[attribute] = val; }, false);
+      } else {
+        window.attachEvent('onload', function(){ object[attribute] = val; });
+      }
+    }
+  </script>
+<div id="navbar-iframe-container"><iframe ng-non-bindable="" frameborder="0" hspace="0" marginheight="0" marginwidth="0" scrolling="no" style="" tabindex="0" vspace="0" width="100%" id="navbar-iframe" name="navbar-iframe" src="./Building Your Own XSS Hunter in AWS _ SmeegeSec_files/navbar.html"></iframe></div>
+<script type="text/javascript" src="./Building Your Own XSS Hunter in AWS _ SmeegeSec_files/plusone.js.下载" gapi_processed="true"></script>
+<script type="text/javascript">
+      gapi.load("gapi.iframes:gapi.iframes.style.bubble", function() {
+        if (gapi.iframes && gapi.iframes.getContext) {
+          gapi.iframes.getContext().openChild({
+              url: 'https://www.blogger.com/navbar.g?targetBlogID\x3d8845853463796109471\x26blogName\x3dSmeegeSec\x26publishMode\x3dPUBLISH_MODE_HOSTED\x26navbarType\x3dLIGHT\x26layoutType\x3dLAYOUTS\x26searchRoot\x3dhttps://www.smeegesec.com/search\x26blogLocale\x3den\x26v\x3d2\x26homepageUrl\x3dhttps://www.smeegesec.com/\x26targetPostID\x3d4725598423524496743\x26blogPostOrPageUrl\x3dhttps://www.smeegesec.com/2018/07/building-your-own-xss-hunter-in-aws.html\x26vt\x3d-2582722995356612086',
+              where: document.getElementById("navbar-iframe-container"),
+              id: "navbar-iframe"
+          });
+        }
+      });
+    </script><script type="text/javascript">
+(function() {
+var script = document.createElement('script');
+script.type = 'text/javascript';
+script.src = '//pagead2.googlesyndication.com/pagead/js/google_top_exp.js';
+var head = document.getElementsByTagName('head')[0];
+if (head) {
+head.appendChild(script);
+}})();
+</script>
+</div><div class="widget Feed" data-version="1" id="Feed1">
+<h2>
+</h2>
+<div class="widget-content" id="Feed1_feedItemListDisplay"><ul><li><span class="item-title"><a href="https://securityboulevard.com/2020/03/report-details-security-threats-posed-by-cloud-file-services/" target="_blank">Report Details Security Threats Posed by Cloud File Services</a></span><span class="item-date">&nbsp;-&nbsp;2020/3/11</span></li><li><span class="item-title"><a href="https://securityboulevard.com/2020/03/avast-response-to-covid-19-outbreak-avast/" target="_blank">Avast Response to COVID-19 Outbreak | Avast</a></span><span class="item-date">&nbsp;-&nbsp;2020/3/11</span></li><li><span class="item-title"><a href="https://securityboulevard.com/2020/03/how-to-leverage-nist-cybersecurity-framework-for-data-integrity/" target="_blank">How to Leverage NIST Cybersecurity Framework for Data Integrity</a></span><span class="item-date">&nbsp;-&nbsp;2020/3/11</span></li><li><span class="item-title"><a href="https://securityboulevard.com/2020/03/we-want-you-win-the-war-on-ransomware-today/" target="_blank">We Want You! Win the War on Ransomware Today</a></span><span class="item-date">&nbsp;-&nbsp;2020/3/11</span></li><li><span class="item-title"><a href="https://securityboulevard.com/2020/03/digital-transformation-and-cloud-migration-initiatives-shouldnt-leave-security-behind/" target="_blank">Digital Transformation and Cloud Migration Initiatives Shouldn’t Leave Security Behind</a></span><span class="item-date">&nbsp;-&nbsp;2020/3/11</span></li></ul></div>
+<div class="clear"></div>
+<span class="widget-item-control">
+<span class="item-control blog-admin">
+<a class="quickedit" href="https://www.blogger.com/rearrange?blogID=8845853463796109471&amp;widgetType=Feed&amp;widgetId=Feed1&amp;action=editWidget&amp;sectionId=sidebarrightnbt" onclick="return _WidgetManager._PopupConfig(document.getElementById(&quot;Feed1&quot;));" rel="nofollow" target="configFeed1" title="Edit">
+<img alt="" height="18" src="./Building Your Own XSS Hunter in AWS _ SmeegeSec_files/icon18_wrench_allbkg.png" width="18">
+</a>
+</span>
+</span>
+<div class="clear"></div>
+</div><div class="widget HTML" data-version="1" id="HTML101">
+<h2 class="title">Featured Posts</h2>
+<div class="widget-content">
+</div>
+<div class="clear"></div>
+<span class="widget-item-control">
+<span class="item-control blog-admin">
+<a class="quickedit" href="https://www.blogger.com/rearrange?blogID=8845853463796109471&amp;widgetType=HTML&amp;widgetId=HTML101&amp;action=editWidget&amp;sectionId=sidebarrightnbt" onclick="return _WidgetManager._PopupConfig(document.getElementById(&quot;HTML101&quot;));" rel="nofollow" target="configHTML101" title="Edit">
+<img alt="" height="18" src="./Building Your Own XSS Hunter in AWS _ SmeegeSec_files/icon18_wrench_allbkg.png" width="18">
+</a>
+</span>
+</span>
+<div class="clear"></div>
+</div></div>
+</div><!-- #secondary -->
+<a class="showTopnbt withS" href="https://www.smeegesec.com/2018/07/building-your-own-xss-hunter-in-aws.html#top" id="toTopnbt" style="display: inline;"><i class="fa fa-angle-up"></i></a>
+<div class="showSearchnbt" id="open-searchnbt"><i class="fa fa-search"></i></div>
+<!-- Start: Search Form -->
+<div id="search-fullnbt">
+<div class="search-containernbt">
+<form action="https://www.smeegesec.com/search" id="search-formnbt" method="get">
+<input id="search-fieldnbt" name="q" placeholder="Type here and hit enter..." type="text" value="">
+</form>
+<span><a id="close-searchnbt"><i class="fa fa-close"></i> Close</a></span>
+</div>
+</div>
+<!-- End: Search Form -->
+<div class="showSidenbt" id="open-sidebarnbt"><span class="sidebarButtonnbt"></span></div>
+<script type="text/javascript">
+//<![CDATA[
+
+/**
+ * navigation.js
+ *
+ * Handles toggling the navigation menu for small screens.
+ */
+( function() {
+	var container, button, menu;
+
+	container = document.getElementById( 'site-navigationnbt' );
+	if ( ! container )
+		return;
+
+	button = container.getElementsByTagName( 'button' )[0];
+	if ( 'undefined' === typeof button )
+		return;
+
+	menu = container.getElementsByTagName( 'ul' )[0];
+
+	// Hide menu toggle button if menu is empty and return early.
+	if ( 'undefined' === typeof menu ) {
+		button.style.display = 'none';
+		return;
+	}
+
+	if ( -1 === menu.className.indexOf( 'nav-menu' ) )
+		menu.className += ' nav-menu';
+
+	button.onclick = function() {
+		if ( -1 !== container.className.indexOf( 'toggled' ) )
+			container.className = container.className.replace( ' toggled', '' );
+		else
+			container.className += ' toggled';
+	};
+} )();
+
+//]]>
+</script>
+<script type="text/javascript">
+//<![CDATA[
+
+(function($) {
+	"use strict";
+	
+	$(document).ready(function() {
+			
+		/*-----------------------------------------------------------------------------------*/
+		/*  Search button
+		/*-----------------------------------------------------------------------------------*/ 
+			if ( $( '.showSearchnbt' ).length ) {
+				$('.showTopnbt').addClass('withS');
+			}
+		
+			$('#open-searchnbt').click(function() {
+				$('#search-fullnbt').fadeIn(400);
+				if ( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
+				} else {
+					$("#search-fullnbt #search-fieldnbt").focus();
+				}
+			});
+
+			$('#close-searchnbt').click(function() {
+				$('#search-fullnbt').fadeOut(400);
+			});
+			
+		/*-----------------------------------------------------------------------------------*/
+		/*  Sidebar Push
+		/*-----------------------------------------------------------------------------------*/ 		
+			$('.widget-areanbt').addClass('loaded');
+			$('.showSidenbt').click(function() {
+				if ($(this).hasClass('close')) {
+					$(this).removeClass('close');
+					$('body').toggleClass( "menu-opened");
+				} else {
+					$(this).addClass('close');
+					$('body').toggleClass( "menu-opened");
+				}
+			});
+			
+		/*-----------------------------------------------------------------------------------*/
+		/*  Detect Mobile Browser
+		/*-----------------------------------------------------------------------------------*/ 
+		if ( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
+		} else {
+		
+			/*-----------------------------------------------------------------------------------*/
+			/*  If menu has submenu
+			/*-----------------------------------------------------------------------------------*/ 
+				$('.main-navigationnbt').find("li").each(function(){
+					if($(this).children("ul").length > 0){
+						$(this).append("<span class='indicator'></span>");
+					}
+				});
+			
+			/*-----------------------------------------------------------------------------------*/
+			/*  Scroll To Top
+			/*-----------------------------------------------------------------------------------*/ 
+				$(window).scroll(function(){
+					if ($(this).scrollTop() > 700) {
+						$('#toTopnbt').fadeIn();
+					} 
+					else {
+						$('#toTopnbt').fadeOut();
+					}
+				}); 
+				$('#toTopnbt').click(function(){
+					$("html, body").animate({ scrollTop: 0 }, 1000);
+					return false;
+				});
+		
+		}
+		
+	
+	});
+	
+})(jQuery);
+
+//]]>
+</script>
+<script type="text/javascript">
+//<![CDATA[
+
+// SmoothScroll for websites v1.2.1
+// Licensed under the terms of the MIT license.
+
+// People involved
+//  - Balazs Galambosi (maintainer)  
+//  - Michael Herf     (Pulse Algorithm)
+
+!function(){function e(){var e=!1;e&&c("keydown",r),v.keyboardSupport&&!e&&u("keydown",r)}function t(){if(document.body){var t=document.body,o=document.documentElement,n=window.innerHeight,r=t.scrollHeight;if(S=document.compatMode.indexOf("CSS")>=0?o:t,w=t,e(),x=!0,top!=self)y=!0;else if(r>n&&(t.offsetHeight<=n||o.offsetHeight<=n)){var a=!1,i=function(){a||o.scrollHeight==document.height||(a=!0,setTimeout(function(){o.style.height=document.height+"px",a=!1},500))};if(o.style.height="auto",setTimeout(i,10),S.offsetHeight<=n){var l=document.createElement("div");l.style.clear="both",t.appendChild(l)}}v.fixedBackground||b||(t.style.backgroundAttachment="scroll",o.style.backgroundAttachment="scroll")}}function o(e,t,o,n){if(n||(n=1e3),d(t,o),1!=v.accelerationMax){var r=+new Date,a=r-C;if(a<v.accelerationDelta){var i=(1+30/a)/2;i>1&&(i=Math.min(i,v.accelerationMax),t*=i,o*=i)}C=+new Date}if(M.push({x:t,y:o,lastX:0>t?.99:-.99,lastY:0>o?.99:-.99,start:+new Date}),!T){var l=e===document.body,u=function(){for(var r=+new Date,a=0,i=0,c=0;c<M.length;c++){var s=M[c],d=r-s.start,f=d>=v.animationTime,h=f?1:d/v.animationTime;v.pulseAlgorithm&&(h=p(h));var m=s.x*h-s.lastX>>0,w=s.y*h-s.lastY>>0;a+=m,i+=w,s.lastX+=m,s.lastY+=w,f&&(M.splice(c,1),c--)}l?window.scrollBy(a,i):(a&&(e.scrollLeft+=a),i&&(e.scrollTop+=i)),t||o||(M=[]),M.length?E(u,e,n/v.frameRate+1):T=!1};E(u,e,0),T=!0}}function n(e){x||t();var n=e.target,r=l(n);if(!r||e.defaultPrevented||s(w,"embed")||s(n,"embed")&&/\.pdf/i.test(n.src))return!0;var a=e.wheelDeltaX||0,i=e.wheelDeltaY||0;return a||i||(i=e.wheelDelta||0),!v.touchpadSupport&&f(i)?!0:(Math.abs(a)>1.2&&(a*=v.stepSize/120),Math.abs(i)>1.2&&(i*=v.stepSize/120),o(r,-a,-i),void e.preventDefault())}function r(e){var t=e.target,n=e.ctrlKey||e.altKey||e.metaKey||e.shiftKey&&e.keyCode!==H.spacebar;if(/input|textarea|select|embed/i.test(t.nodeName)||t.isContentEditable||e.defaultPrevented||n)return!0;if(s(t,"button")&&e.keyCode===H.spacebar)return!0;var r,a=0,i=0,u=l(w),c=u.clientHeight;switch(u==document.body&&(c=window.innerHeight),e.keyCode){case H.up:i=-v.arrowScroll;break;case H.down:i=v.arrowScroll;break;case H.spacebar:r=e.shiftKey?1:-1,i=-r*c*.9;break;case H.pageup:i=.9*-c;break;case H.pagedown:i=.9*c;break;case H.home:i=-u.scrollTop;break;case H.end:var d=u.scrollHeight-u.scrollTop-c;i=d>0?d+10:0;break;case H.left:a=-v.arrowScroll;break;case H.right:a=v.arrowScroll;break;default:return!0}o(u,a,i),e.preventDefault()}function a(e){w=e.target}function i(e,t){for(var o=e.length;o--;)z[N(e[o])]=t;return t}function l(e){var t=[],o=S.scrollHeight;do{var n=z[N(e)];if(n)return i(t,n);if(t.push(e),o===e.scrollHeight){if(!y||S.clientHeight+10<o)return i(t,document.body)}else if(e.clientHeight+10<e.scrollHeight&&(overflow=getComputedStyle(e,"").getPropertyValue("overflow-y"),"scroll"===overflow||"auto"===overflow))return i(t,e)}while(e=e.parentNode)}function u(e,t,o){window.addEventListener(e,t,o||!1)}function c(e,t,o){window.removeEventListener(e,t,o||!1)}function s(e,t){return(e.nodeName||"").toLowerCase()===t.toLowerCase()}function d(e,t){e=e>0?1:-1,t=t>0?1:-1,(k.x!==e||k.y!==t)&&(k.x=e,k.y=t,M=[],C=0)}function f(e){if(e){e=Math.abs(e),D.push(e),D.shift(),clearTimeout(A);var t=D[0]==D[1]&&D[1]==D[2],o=h(D[0],120)&&h(D[1],120)&&h(D[2],120);return!(t||o)}}function h(e,t){return Math.floor(e/t)==e/t}function m(e){var t,o,n;return e*=v.pulseScale,1>e?t=e-(1-Math.exp(-e)):(o=Math.exp(-1),e-=1,n=1-Math.exp(-e),t=o+n*(1-o)),t*v.pulseNormalize}function p(e){return e>=1?1:0>=e?0:(1==v.pulseNormalize&&(v.pulseNormalize/=m(1)),m(e))}var w,g={frameRate:150,animationTime:800,stepSize:120,pulseAlgorithm:!0,pulseScale:8,pulseNormalize:1,accelerationDelta:20,accelerationMax:1,keyboardSupport:!0,arrowScroll:50,touchpadSupport:!0,fixedBackground:!0,excluded:""},v=g,b=!1,y=!1,k={x:0,y:0},x=!1,S=document.documentElement,D=[120,120,120],H={left:37,up:38,right:39,down:40,spacebar:32,pageup:33,pagedown:34,end:35,home:36},v=g,M=[],T=!1,C=+new Date,z={};setInterval(function(){z={}},1e4);var A,N=function(){var e=0;return function(t){return t.uniqueID||(t.uniqueID=e++)}}(),E=function(){return window.requestAnimationFrame||window.webkitRequestAnimationFrame||function(e,t,o){window.setTimeout(e,o||1e3/60)}}(),K=/chrome/i.test(window.navigator.userAgent),L="onmousewheel"in document;L&&K&&(u("mousedown",a),u("mousewheel",n),u("load",t))}();
+
+//]]>
+</script>
+
+<script type="text/javascript" src="./Building Your Own XSS Hunter in AWS _ SmeegeSec_files/367476687-widgets.js.下载"></script>
+<script type="text/javascript">
+window['__wavt'] = 'AOuZoY4yJpsLjhmnjJyZFyc6a3ytiitgrw:1583841127378';_WidgetManager._Init('//www.blogger.com/rearrange?blogID\x3d8845853463796109471','//www.smeegesec.com/2018/07/building-your-own-xss-hunter-in-aws.html','8845853463796109471');
+_WidgetManager._SetDataContext([{'name': 'blog', 'data': {'blogId': '8845853463796109471', 'title': 'SmeegeSec', 'url': 'https://www.smeegesec.com/2018/07/building-your-own-xss-hunter-in-aws.html', 'canonicalUrl': 'https://www.smeegesec.com/2018/07/building-your-own-xss-hunter-in-aws.html', 'homepageUrl': 'https://www.smeegesec.com/', 'searchUrl': 'https://www.smeegesec.com/search', 'canonicalHomepageUrl': 'https://www.smeegesec.com/', 'blogspotFaviconUrl': 'https://www.smeegesec.com/favicon.ico', 'bloggerUrl': 'https://www.blogger.com', 'hasCustomDomain': true, 'httpsEnabled': true, 'enabledCommentProfileImages': true, 'gPlusViewType': 'FILTERED_POSTMOD', 'adultContent': false, 'analyticsAccountNumber': '', 'encoding': 'UTF-8', 'locale': 'en', 'localeUnderscoreDelimited': 'en', 'languageDirection': 'ltr', 'isPrivate': false, 'isMobile': false, 'isMobileRequest': false, 'mobileClass': '', 'isPrivateBlog': false, 'feedLinks': '\x3clink rel\x3d\x22alternate\x22 type\x3d\x22application/atom+xml\x22 title\x3d\x22SmeegeSec - Atom\x22 href\x3d\x22https://www.smeegesec.com/feeds/posts/default\x22 /\x3e\n\x3clink rel\x3d\x22alternate\x22 type\x3d\x22application/rss+xml\x22 title\x3d\x22SmeegeSec - RSS\x22 href\x3d\x22https://www.smeegesec.com/feeds/posts/default?alt\x3drss\x22 /\x3e\n\x3clink rel\x3d\x22service.post\x22 type\x3d\x22application/atom+xml\x22 title\x3d\x22SmeegeSec - Atom\x22 href\x3d\x22https://www.blogger.com/feeds/8845853463796109471/posts/default\x22 /\x3e\n\n\x3clink rel\x3d\x22alternate\x22 type\x3d\x22application/atom+xml\x22 title\x3d\x22SmeegeSec - Atom\x22 href\x3d\x22https://www.smeegesec.com/feeds/4725598423524496743/comments/default\x22 /\x3e\n', 'meTag': '', 'adsenseHostId': 'ca-host-pub-1556223355139109', 'adsenseHasAds': false, 'view': '', 'dynamicViewsCommentsSrc': '//www.blogblog.com/dynamicviews/4224c15c4e7c9321/js/comments.js', 'dynamicViewsScriptSrc': '//www.blogblog.com/dynamicviews/3940faea15179644', 'plusOneApiSrc': 'https://apis.google.com/js/plusone.js', 'disableGComments': true, 'sharing': {'platforms': [{'name': 'Get link', 'key': 'link', 'shareMessage': 'Get link', 'target': ''}, {'name': 'Facebook', 'key': 'facebook', 'shareMessage': 'Share to Facebook', 'target': 'facebook'}, {'name': 'BlogThis!', 'key': 'blogThis', 'shareMessage': 'BlogThis!', 'target': 'blog'}, {'name': 'Twitter', 'key': 'twitter', 'shareMessage': 'Share to Twitter', 'target': 'twitter'}, {'name': 'Pinterest', 'key': 'pinterest', 'shareMessage': 'Share to Pinterest', 'target': 'pinterest'}, {'name': 'Email', 'key': 'email', 'shareMessage': 'Email', 'target': 'email'}], 'disableGooglePlus': true, 'googlePlusShareButtonWidth': 300, 'googlePlusBootstrap': '\x3cscript type\x3d\x22text/javascript\x22\x3ewindow.___gcfg \x3d {\x27lang\x27: \x27en\x27};\x3c/script\x3e'}, 'hasCustomJumpLinkMessage': false, 'jumpLinkMessage': 'Read more', 'pageType': 'item', 'postId': '4725598423524496743', 'postImageThumbnailUrl': 'https://2.bp.blogspot.com/-HTWTDFc0biQ/W1JttTx7zZI/AAAAAAAAAlk/o-FGnUnUF3kY3W4qNT54ALzUsxGfaowFwCLcBGAs/s72-c/NameCheap-DNS.png', 'postImageUrl': 'https://2.bp.blogspot.com/-HTWTDFc0biQ/W1JttTx7zZI/AAAAAAAAAlk/o-FGnUnUF3kY3W4qNT54ALzUsxGfaowFwCLcBGAs/s640/NameCheap-DNS.png', 'pageName': 'Building Your Own XSS Hunter in AWS', 'pageTitle': 'SmeegeSec: Building Your Own XSS Hunter in AWS'}}, {'name': 'features', 'data': {'sharing_get_link_dialog': 'true', 'sharing_native': 'false'}}, {'name': 'messages', 'data': {'edit': 'Edit', 'linkCopiedToClipboard': 'Link copied to clipboard!', 'ok': 'Ok', 'postLink': 'Post Link'}}, {'name': 'template', 'data': {'name': 'custom', 'localizedName': 'Custom', 'isResponsive': false, 'isAlternateRendering': false, 'isCustom': true}}, {'name': 'view', 'data': {'classic': {'name': 'classic', 'url': '?view\x3dclassic'}, 'flipcard': {'name': 'flipcard', 'url': '?view\x3dflipcard'}, 'magazine': {'name': 'magazine', 'url': '?view\x3dmagazine'}, 'mosaic': {'name': 'mosaic', 'url': '?view\x3dmosaic'}, 'sidebar': {'name': 'sidebar', 'url': '?view\x3dsidebar'}, 'snapshot': {'name': 'snapshot', 'url': '?view\x3dsnapshot'}, 'timeslide': {'name': 'timeslide', 'url': '?view\x3dtimeslide'}, 'isMobile': false, 'title': 'Building Your Own XSS Hunter in AWS', 'description': ' XSS Hunter is a tool for finding cross-site scripting (XSS) vulnerabilities, including the elusive blind XSS . A web version of the tool is...', 'featuredImage': 'https://2.bp.blogspot.com/-HTWTDFc0biQ/W1JttTx7zZI/AAAAAAAAAlk/o-FGnUnUF3kY3W4qNT54ALzUsxGfaowFwCLcBGAs/s640/NameCheap-DNS.png', 'url': 'https://www.smeegesec.com/2018/07/building-your-own-xss-hunter-in-aws.html', 'type': 'item', 'isSingleItem': true, 'isMultipleItems': false, 'isError': false, 'isPage': false, 'isPost': true, 'isHomepage': false, 'isArchive': false, 'isLabelSearch': false, 'postId': 4725598423524496743}}]);
+_WidgetManager._RegisterWidget('_HeaderView', new _WidgetInfo('Header1', 'headersec', document.getElementById('Header1'), {}, 'displayModeFull'));
+_WidgetManager._RegisterWidget('_BlogView', new _WidgetInfo('Blog1', 'mainblogsec', document.getElementById('Blog1'), {'cmtInteractionsEnabled': false, 'lightboxEnabled': true, 'lightboxModuleUrl': 'https://www.blogger.com/static/v1/jsbin/3826210422-lbx.js', 'lightboxCssUrl': 'https://www.blogger.com/static/v1/v-css/368954415-lightbox_bundle.css'}, 'displayModeFull'));
+_WidgetManager._RegisterWidget('_PopularPostsView', new _WidgetInfo('PopularPosts1', 'sidebarrightnbt', document.getElementById('PopularPosts1'), {}, 'displayModeFull'));
+_WidgetManager._RegisterWidget('_HTMLView', new _WidgetInfo('HTML1', 'sidebarrightnbt', document.getElementById('HTML1'), {}, 'displayModeFull'));
+_WidgetManager._RegisterWidget('_LabelView', new _WidgetInfo('Label1', 'sidebarrightnbt', document.getElementById('Label1'), {}, 'displayModeFull'));
+_WidgetManager._RegisterWidget('_BlogArchiveView', new _WidgetInfo('BlogArchive1', 'sidebarrightnbt', document.getElementById('BlogArchive1'), {'languageDirection': 'ltr', 'loadingMessage': 'Loading\x26hellip;'}, 'displayModeFull'));
+_WidgetManager._RegisterWidget('_PageListView', new _WidgetInfo('PageList1', 'sidebarrightnbt', document.getElementById('PageList1'), {'title': 'Pages', 'links': [{'isCurrentPage': false, 'href': 'https://www.smeegesec.com/', 'title': 'Home'}, {'isCurrentPage': false, 'href': 'https://www.smeegesec.com/p/about.html', 'id': '6024357706783905589', 'title': 'About'}, {'isCurrentPage': false, 'href': 'https://www.smeegesec.com/p/resources.html', 'id': '4990444167214135473', 'title': 'Resources'}, {'isCurrentPage': false, 'href': 'https://www.smeegesec.com/p/contact.html', 'id': '6822535758083106113', 'title': 'Contact'}], 'mobile': false}, 'displayModeFull'));
+_WidgetManager._RegisterWidget('_AttributionView', new _WidgetInfo('Attribution1', 'sidebarrightnbt', document.getElementById('Attribution1'), {}, 'displayModeFull'));
+_WidgetManager._RegisterWidget('_LabelView', new _WidgetInfo('Label2', 'sidebarrightnbt', document.getElementById('Label2'), {}, 'displayModeFull'));
+_WidgetManager._RegisterWidget('_NavbarView', new _WidgetInfo('Navbar1', 'sidebarrightnbt', document.getElementById('Navbar1'), {}, 'displayModeFull'));
+_WidgetManager._RegisterWidget('_FeedView', new _WidgetInfo('Feed1', 'sidebarrightnbt', document.getElementById('Feed1'), {'title': '', 'showItemDate': true, 'showItemAuthor': false, 'feedUrl': 'http://www.securitybloggersnetwork.com/feed/', 'numItemsShow': 5, 'loadingMsg': 'Loading...', 'openLinksInNewWindow': true, 'useFeedWidgetServ': 'true'}, 'displayModeFull'));
+_WidgetManager._RegisterWidget('_HTMLView', new _WidgetInfo('HTML101', 'sidebarrightnbt', document.getElementById('HTML101'), {}, 'displayModeFull'));
+</script>
+
+<link type="text/css" rel="stylesheet" href="./Building Your Own XSS Hunter in AWS _ SmeegeSec_files/368954415-lightbox_bundle.css"><script type="text/javascript" src="./Building Your Own XSS Hunter in AWS _ SmeegeSec_files/3826210422-lbx.js.下载"></script></body></html>
