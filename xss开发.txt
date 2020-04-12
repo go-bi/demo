@@ -1,0 +1,41 @@
+用户注册、websocket、自定义插件功能、
+https://github.com/mandatoryprogrammer/xsshunter
+https://github.com/ssl/ezXSS
+https://github.com/930201676/HttpPwnly
+https://github.com/kagurazakasanae/SuperXSS
+
+
+描述：
+主要通过websocket实现实时互动，发挥自定义（js）插件快速扩展功能
+
+* session hijacking
+
+
+
+功能：
+URL
+IP Address
+Referer
+User-Agent
+Cookies
+Locale Storage
+Session Storage
+Full HTML DOM source of the page
+Page origin
+Time of execution
+Screenshot
+
+
+参考：
+http://noobe.io/articles/2019-10/xss-to-account-takeover #绕过CSRF标头保护和HTTPOnly Cookie
+http://fex.baidu.com/blog/2014/08/sensitive-data-sniffer/ #HttpOnly 隐私嗅探器
+https://github.com/EtherDream/xss_ghost #将 XSS 注入到父窗口和子窗口，延长攻击时间。
+https://github.com/shadow-workers/shadow-workers #Service Workers（SW）
+http://drops.xmd5.com/static/drops/web-10798.html
+https://paper.seebug.org/177/
+https://github.com/dsolstad/mygg.js #通过跨站点脚本来代理的Web流量
+https://blog.csdn.net/he_and/article/details/79790938 #浏览器记住密码攻击
+https://www.cnblogs.com/moonLightcy/p/6944313.html #避免浏览器自动填充表单的解决方式
+https://null-byte.wonderhowto.com/how-to/reveal-saved-browser-passwords-with-javascript-injections-0131230/ #浏览器记住密码攻击
+https://c0nradsc0rner.com/2016/06/17/xss-persistence-using-jsonp-and-serviceworkers/ #使用JSONP和serviceWorkers的XSS持久性
+https://www.christian-schneider.net/CrossSiteWebSocketHijacking.html #跨站点WebSocket劫持
