@@ -8,7 +8,7 @@ SiteServer CMS remote download getshell `demo.zip`下载的后门文件
 openssh*.tar.gz 修改后的文件编译安装即可，*.docx为修改说明。
 + https://www.zhoufengjie.cn/?p=385
 + https://www.zhoufengjie.cn/?p=174
-
+## exin.zipEXIN挖矿木马之横向渗透分析
 ## run.js
 Browser-based subdomain bruteforcing using DNS over HTTP(s) (DoH)
 ## dropbear
