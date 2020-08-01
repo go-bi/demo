@@ -1,6 +1,6 @@
 # 
 
-~~北京、上海、重庆、新疆、西藏、云南、青海、湖北
+~~北京、上海、重庆、新疆、西藏、云南、青海、湖北~~
 81+500000
 ## siteserver cms 5.X vuln demo
 SiteServer CMS remote download getshell `demo.zip`下载的后门文件
