@@ -32,6 +32,8 @@ http://hzytsc.pceggs.com/Login.aspx 市场人员
 http://ytadht.pceggs.com/Login.aspx PC蛋蛋广告
 http://ytappht.pceggs.com/Login.aspx PC蛋蛋app
 http://ytpceggsht.pceggs.com/Login.aspx 主站
+http://zztg.pceggs.com/
+http://sdkht.pceggs.com/
 
 
 http://mk.kingbom.com:85/LogInOut.php
