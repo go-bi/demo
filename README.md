@@ -186,4 +186,7 @@ https://github.com/mwrlabs/drozer/releases/download/2.3.4/drozer-agent-2.3.4.apk
 
 6、使用drozer控制台进行连接
 drozer console connect
+
+7、运行run app.package.list中文乱码
+set PYTHONIOENCODING=UTF-8
 ```
