@@ -161,3 +161,29 @@ do
     fi
 done
 ```
+
+## windows安装drozer
+```
+1、drozer下载路径
+https://labs.f-secure.com/tools/drozer/
+https://github.com/FSecureLABS/drozer
+
+2、安装依赖
+https://www.python.org/ftp/python/2.7.18/python-2.7.18.amd64.msi
+pip install protobuf
+pip install pyOpenSSL
+pip install Twisted
+pip install service_identity	//不报错No module named service_identity，不需要安装
+
+3、模拟器下载
+https://res06.bignox.com/full/20200814/700d88dab7714cb794b7550b8feda5b1.exe?filename=nox_setup_v6.6.1.2_full.exe
+
+4、安装drozer-agent代理
+https://github.com/mwrlabs/drozer/releases/download/2.3.4/drozer-agent-2.3.4.apk
+
+5、端口转发
+"D:\Program Files\Nox\bin\nox_adb.exe" forward tcp:31415 tcp:31415	//根据实际夜神模拟器安装路径调整
+
+6、使用drozer控制台进行连接
+drozer console connect
+```
